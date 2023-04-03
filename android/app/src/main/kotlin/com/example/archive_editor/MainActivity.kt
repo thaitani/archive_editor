@@ -1,4 +1,4 @@
-package com.example.archive_editor
+package dev.thaitani.archive_editor
 
 import io.flutter.embedding.android.FlutterActivity
 

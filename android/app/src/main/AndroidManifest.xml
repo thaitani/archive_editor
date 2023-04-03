@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.archive_editor">
+    package="dev.thaitani.archive_editor">
    <application
         android:label="archive_editor"
         android:name="${applicationName}"
