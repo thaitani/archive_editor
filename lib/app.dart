@@ -1,3 +1,4 @@
+import 'package:archive_editor/color_schemes.g.dart';
 import 'package:archive_editor/i18n/strings.g.dart';
 import 'package:archive_editor/route/router.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,11 @@ class App extends StatelessWidget {
       title: t.app.title,
       theme: ThemeData(
         useMaterial3: true,
-        primarySwatch: Colors.blue,
+        colorScheme: lightColorScheme,
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: darkColorScheme,
       ),
     );
   }

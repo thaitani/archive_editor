@@ -1,9 +1,9 @@
 /// Generated file. Do not edit.
 ///
 /// Locales: 1
-/// Strings: 5
+/// Strings: 1
 ///
-/// Built on 2023-04-14 at 02:29 UTC
+/// Built on 2023-04-14 at 06:07 UTC
 
 // coverage:ignore-file
 // ignore_for_file: type=lint
@@ -147,9 +147,6 @@ class _StringsJa implements BaseTranslations<AppLocale, _StringsJa> {
 
 	// Translations
 	late final _StringsAppJa app = _StringsAppJa._(_root);
-	String hello({required Object name}) => 'こんにちは ${name}';
-	String get save => '保存';
-	late final _StringsLoginJa login = _StringsLoginJa._(_root);
 }
 
 // Path: app
@@ -162,17 +159,6 @@ class _StringsAppJa {
 	String get title => 'Archive Editor';
 }
 
-// Path: login
-class _StringsLoginJa {
-	_StringsLoginJa._(this._root);
-
-	final _StringsJa _root; // ignore: unused_field
-
-	// Translations
-	String get success => 'Logged in successfully';
-	String get fail => 'Logged in failed';
-}
-
 /// Flat map(s) containing all translations.
 /// Only for edge cases! For simple maps, use the map function of this library.
 
@@ -180,10 +166,6 @@ extension on _StringsJa {
 	dynamic _flatMapFunction(String path) {
 		switch (path) {
 			case 'app.title': return 'Archive Editor';
-			case 'hello': return ({required Object name}) => 'こんにちは ${name}';
-			case 'save': return '保存';
-			case 'login.success': return 'Logged in successfully';
-			case 'login.fail': return 'Logged in failed';
 			default: return null;
 		}
 	}
