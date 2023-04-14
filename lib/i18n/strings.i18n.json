@@ -1,0 +1,11 @@
+{
+  "app": {
+    "title": "Archive Editor"
+  },
+  "hello": "こんにちは $name",
+  "save": "保存",
+  "login": {
+    "success": "Logged in successfully",
+    "fail": "Logged in failed"
+  }
+}

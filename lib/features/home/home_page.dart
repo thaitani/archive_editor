@@ -1,13 +1,29 @@
 import 'dart:io';
 
 import 'package:archive/archive_io.dart';
-import 'package:archive_editor/main.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 
-class MyHomePage extends ConsumerWidget {
-  const MyHomePage({super.key});
+final fileProvider = StateProvider<PlatformFile?>((ref) {
+  return;
+});
+
+final archiveProvider = StateProvider<Archive?>((ref) {
+  final file = ref.watch(fileProvider);
+  if (file == null) {
+    return null;
+  }
+  final bytes = File(file.path!).readAsBytesSync();
+  return ZipDecoder().decodeBytes(bytes);
+});
+
+final appDocDirProvider =
+    FutureProvider<Directory>((ref) => getApplicationDocumentsDirectory());
+
+class HomePage extends ConsumerWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -16,19 +32,20 @@ class MyHomePage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          file?.name ?? 'Title',
+          file?.name ?? 'No Title',
         ),
         backgroundColor: Theme.of(context).secondaryHeaderColor,
       ),
       floatingActionButton: FloatingActionButton(
-          child: const Icon(Icons.file_open),
-          onPressed: () async {
-            final fileResult = await FilePicker.platform
-                .pickFiles(type: FileType.custom, allowedExtensions: ['zip']);
-            if (fileResult != null) {
-              ref.read(fileProvider.notifier).state = fileResult.files.first;
-            }
-          }),
+        child: const Icon(Icons.file_open),
+        onPressed: () async {
+          final fileResult = await FilePicker.platform
+              .pickFiles(type: FileType.custom, allowedExtensions: ['zip']);
+          if (fileResult != null) {
+            ref.read(fileProvider.notifier).state = fileResult.files.first;
+          }
+        },
+      ),
       body: archive == null
           ? const SizedBox.shrink()
           : PageView.builder(
@@ -42,7 +59,8 @@ class MyHomePage extends ConsumerWidget {
                     final tmp = value.path;
                     final files = archive.files
                         .where(
-                            (element) => !element.name.startsWith('__MACOSX'))
+                          (element) => !element.name.startsWith('__MACOSX'),
+                        )
                         .toList();
                     final file = files[i];
                     if (!file.isFile) {
