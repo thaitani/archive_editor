@@ -1,6 +1,6 @@
-import 'package:archive_editor/color_schemes.g.dart';
 import 'package:archive_editor/i18n/strings.g.dart';
-import 'package:archive_editor/route/router.dart';
+import 'package:archive_editor/routes/router.dart';
+import 'package:archive_editor/theme/color_schemes.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 

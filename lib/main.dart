@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:archive_editor/app.dart';
 import 'package:archive_editor/i18n/strings.g.dart';
+import 'package:archive_editor/provider/app_directory.dart';
 import 'package:archive_editor/utils/logger.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +18,7 @@ void main() {
   runApp(
     TranslationProvider(
       child: const ProviderScope(
-        child: App(),
+        child: AppDirectoryProvider(child: App()),
       ),
     ),
   );

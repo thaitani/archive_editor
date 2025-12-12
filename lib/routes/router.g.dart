@@ -6,26 +6,33 @@ part of 'router.dart';
 // GoRouterGenerator
 // **************************************************************************
 
-List<GoRoute> get $appRoutes => [
+List<RouteBase> get $appRoutes => [
       $homeRoute,
     ];
 
-GoRoute get $homeRoute => GoRouteData.$route(
+RouteBase get $homeRoute => GoRouteData.$route(
       path: '/',
-      factory: $HomeRouteExtension._fromState,
+      factory: $HomeRoute._fromState,
     );
 
-extension $HomeRouteExtension on HomeRoute {
+mixin $HomeRoute on GoRouteData {
   static HomeRoute _fromState(GoRouterState state) => const HomeRoute();
 
+  @override
   String get location => GoRouteData.$location(
         '/',
       );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
-  void push(BuildContext context) => context.push(location);
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
 }

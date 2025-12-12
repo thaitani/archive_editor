@@ -1,38 +1,78 @@
 /// Generated file. Do not edit.
 ///
+/// Source: lib/i18n
+/// To regenerate, run: `dart run slang`
+///
 /// Locales: 1
 /// Strings: 1
 ///
-/// Built on 2023-04-14 at 06:07 UTC
+/// Built on 2025-12-12 at 05:39 UTC
 
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, unused_import
+// dart format off
 
 import 'package:flutter/widgets.dart';
-import 'package:slang/builder/model/node.dart';
+import 'package:intl/intl.dart';
+import 'package:slang/generated.dart';
 import 'package:slang_flutter/slang_flutter.dart';
 export 'package:slang_flutter/slang_flutter.dart';
 
-const AppLocale _baseLocale = AppLocale.ja;
+part 'strings_ja.g.dart';
 
-/// Supported locales, see extension methods below.
+/// Supported locales.
 ///
 /// Usage:
 /// - LocaleSettings.setLocale(AppLocale.ja) // set locale
 /// - Locale locale = AppLocale.ja.flutterLocale // get flutter locale from enum
 /// - if (LocaleSettings.currentLocale == AppLocale.ja) // locale check
-enum AppLocale with BaseAppLocale<AppLocale, _StringsJa> {
-	ja(languageCode: 'ja', build: _StringsJa.build);
+enum AppLocale with BaseAppLocale<AppLocale, Translations> {
+	ja(languageCode: 'ja');
 
-	const AppLocale({required this.languageCode, this.scriptCode, this.countryCode, required this.build}); // ignore: unused_element
+	const AppLocale({
+		required this.languageCode,
+		this.scriptCode, // ignore: unused_element, unused_element_parameter
+		this.countryCode, // ignore: unused_element, unused_element_parameter
+	});
 
 	@override final String languageCode;
 	@override final String? scriptCode;
 	@override final String? countryCode;
-	@override final TranslationBuilder<AppLocale, _StringsJa> build;
+
+	@override
+	Future<Translations> build({
+		Map<String, Node>? overrides,
+		PluralResolver? cardinalResolver,
+		PluralResolver? ordinalResolver,
+	}) async {
+		switch (this) {
+			case AppLocale.ja:
+				return TranslationsJa(
+					overrides: overrides,
+					cardinalResolver: cardinalResolver,
+					ordinalResolver: ordinalResolver,
+				);
+		}
+	}
+
+	@override
+	Translations buildSync({
+		Map<String, Node>? overrides,
+		PluralResolver? cardinalResolver,
+		PluralResolver? ordinalResolver,
+	}) {
+		switch (this) {
+			case AppLocale.ja:
+				return TranslationsJa(
+					overrides: overrides,
+					cardinalResolver: cardinalResolver,
+					ordinalResolver: ordinalResolver,
+				);
+		}
+	}
 
 	/// Gets current instance managed by [LocaleSettings].
-	_StringsJa get translations => LocaleSettings.instance.translationMap[this]!;
+	Translations get translations => LocaleSettings.instance.getTranslations(this);
 }
 
 /// Method A: Simple
@@ -44,7 +84,7 @@ enum AppLocale with BaseAppLocale<AppLocale, _StringsJa> {
 /// Usage:
 /// String a = t.someKey.anotherKey;
 /// String b = t['someKey.anotherKey']; // Only for edge cases!
-_StringsJa get t => LocaleSettings.instance.currentTranslations;
+Translations get t => LocaleSettings.instance.currentTranslations;
 
 /// Method B: Advanced
 ///
@@ -61,17 +101,10 @@ _StringsJa get t => LocaleSettings.instance.currentTranslations;
 /// final t = Translations.of(context); // Get t variable.
 /// String a = t.someKey.anotherKey; // Use t variable.
 /// String b = t['someKey.anotherKey']; // Only for edge cases!
-class Translations {
-	Translations._(); // no constructor
-
-	static _StringsJa of(BuildContext context) => InheritedLocaleData.of<AppLocale, _StringsJa>(context).translations;
-}
-
-/// The provider for method B
-class TranslationProvider extends BaseTranslationProvider<AppLocale, _StringsJa> {
+class TranslationProvider extends BaseTranslationProvider<AppLocale, Translations> {
 	TranslationProvider({required super.child}) : super(settings: LocaleSettings.instance);
 
-	static InheritedLocaleData<AppLocale, _StringsJa> of(BuildContext context) => InheritedLocaleData.of<AppLocale, _StringsJa>(context);
+	static InheritedLocaleData<AppLocale, Translations> of(BuildContext context) => InheritedLocaleData.of<AppLocale, Translations>(context);
 }
 
 /// Method B shorthand via [BuildContext] extension method.
@@ -80,24 +113,36 @@ class TranslationProvider extends BaseTranslationProvider<AppLocale, _StringsJa>
 /// Usage (e.g. in a widget's build method):
 /// context.t.someKey.anotherKey
 extension BuildContextTranslationsExtension on BuildContext {
-	_StringsJa get t => TranslationProvider.of(this).translations;
+	Translations get t => TranslationProvider.of(this).translations;
 }
 
 /// Manages all translation instances and the current locale
-class LocaleSettings extends BaseFlutterLocaleSettings<AppLocale, _StringsJa> {
-	LocaleSettings._() : super(utils: AppLocaleUtils.instance);
+class LocaleSettings extends BaseFlutterLocaleSettings<AppLocale, Translations> {
+	LocaleSettings._() : super(
+		utils: AppLocaleUtils.instance,
+		lazy: true,
+	);
 
 	static final instance = LocaleSettings._();
 
 	// static aliases (checkout base methods for documentation)
 	static AppLocale get currentLocale => instance.currentLocale;
 	static Stream<AppLocale> getLocaleStream() => instance.getLocaleStream();
-	static AppLocale setLocale(AppLocale locale, {bool? listenToDeviceLocale = false}) => instance.setLocale(locale, listenToDeviceLocale: listenToDeviceLocale);
-	static AppLocale setLocaleRaw(String rawLocale, {bool? listenToDeviceLocale = false}) => instance.setLocaleRaw(rawLocale, listenToDeviceLocale: listenToDeviceLocale);
-	static AppLocale useDeviceLocale() => instance.useDeviceLocale();
-	@Deprecated('Use [AppLocaleUtils.supportedLocales]') static List<Locale> get supportedLocales => instance.supportedLocales;
-	@Deprecated('Use [AppLocaleUtils.supportedLocalesRaw]') static List<String> get supportedLocalesRaw => instance.supportedLocalesRaw;
-	static void setPluralResolver({String? language, AppLocale? locale, PluralResolver? cardinalResolver, PluralResolver? ordinalResolver}) => instance.setPluralResolver(
+	static Future<AppLocale> setLocale(AppLocale locale, {bool? listenToDeviceLocale = false}) => instance.setLocale(locale, listenToDeviceLocale: listenToDeviceLocale);
+	static Future<AppLocale> setLocaleRaw(String rawLocale, {bool? listenToDeviceLocale = false}) => instance.setLocaleRaw(rawLocale, listenToDeviceLocale: listenToDeviceLocale);
+	static Future<AppLocale> useDeviceLocale() => instance.useDeviceLocale();
+	static Future<void> setPluralResolver({String? language, AppLocale? locale, PluralResolver? cardinalResolver, PluralResolver? ordinalResolver}) => instance.setPluralResolver(
+		language: language,
+		locale: locale,
+		cardinalResolver: cardinalResolver,
+		ordinalResolver: ordinalResolver,
+	);
+
+	// synchronous versions
+	static AppLocale setLocaleSync(AppLocale locale, {bool? listenToDeviceLocale = false}) => instance.setLocaleSync(locale, listenToDeviceLocale: listenToDeviceLocale);
+	static AppLocale setLocaleRawSync(String rawLocale, {bool? listenToDeviceLocale = false}) => instance.setLocaleRawSync(rawLocale, listenToDeviceLocale: listenToDeviceLocale);
+	static AppLocale useDeviceLocaleSync() => instance.useDeviceLocaleSync();
+	static void setPluralResolverSync({String? language, AppLocale? locale, PluralResolver? cardinalResolver, PluralResolver? ordinalResolver}) => instance.setPluralResolverSync(
 		language: language,
 		locale: locale,
 		cardinalResolver: cardinalResolver,
@@ -106,8 +151,11 @@ class LocaleSettings extends BaseFlutterLocaleSettings<AppLocale, _StringsJa> {
 }
 
 /// Provides utility functions without any side effects.
-class AppLocaleUtils extends BaseAppLocaleUtils<AppLocale, _StringsJa> {
-	AppLocaleUtils._() : super(baseLocale: _baseLocale, locales: AppLocale.values);
+class AppLocaleUtils extends BaseAppLocaleUtils<AppLocale, Translations> {
+	AppLocaleUtils._() : super(
+		baseLocale: AppLocale.ja,
+		locales: AppLocale.values,
+	);
 
 	static final instance = AppLocaleUtils._();
 
@@ -117,56 +165,4 @@ class AppLocaleUtils extends BaseAppLocaleUtils<AppLocale, _StringsJa> {
 	static AppLocale findDeviceLocale() => instance.findDeviceLocale();
 	static List<Locale> get supportedLocales => instance.supportedLocales;
 	static List<String> get supportedLocalesRaw => instance.supportedLocalesRaw;
-}
-
-// translations
-
-// Path: <root>
-class _StringsJa implements BaseTranslations<AppLocale, _StringsJa> {
-
-	/// You can call this constructor and build your own translation instance of this locale.
-	/// Constructing via the enum [AppLocale.build] is preferred.
-	_StringsJa.build({Map<String, Node>? overrides, PluralResolver? cardinalResolver, PluralResolver? ordinalResolver})
-		: assert(overrides == null, 'Set "translation_overrides: true" in order to enable this feature.'),
-		  $meta = TranslationMetadata(
-		    locale: AppLocale.ja,
-		    overrides: overrides ?? {},
-		    cardinalResolver: cardinalResolver,
-		    ordinalResolver: ordinalResolver,
-		  ) {
-		$meta.setFlatMapFunction(_flatMapFunction);
-	}
-
-	/// Metadata for the translations of <ja>.
-	@override final TranslationMetadata<AppLocale, _StringsJa> $meta;
-
-	/// Access flat map
-	dynamic operator[](String key) => $meta.getTranslation(key);
-
-	late final _StringsJa _root = this; // ignore: unused_field
-
-	// Translations
-	late final _StringsAppJa app = _StringsAppJa._(_root);
-}
-
-// Path: app
-class _StringsAppJa {
-	_StringsAppJa._(this._root);
-
-	final _StringsJa _root; // ignore: unused_field
-
-	// Translations
-	String get title => 'Archive Editor';
-}
-
-/// Flat map(s) containing all translations.
-/// Only for edge cases! For simple maps, use the map function of this library.
-
-extension on _StringsJa {
-	dynamic _flatMapFunction(String path) {
-		switch (path) {
-			case 'app.title': return 'Archive Editor';
-			default: return null;
-		}
-	}
 }

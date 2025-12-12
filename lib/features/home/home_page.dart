@@ -4,31 +4,42 @@ import 'package:archive/archive_io.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final fileProvider = StateProvider<PlatformFile?>((ref) {
-  return;
-});
+part 'home_page.g.dart';
 
-final archiveProvider = StateProvider<Archive?>((ref) {
-  final file = ref.watch(fileProvider);
-  if (file == null) {
+@riverpod
+class InputFile extends _$InputFile {
+  @override
+  PlatformFile? build() {
     return null;
   }
-  final bytes = File(file.path!).readAsBytesSync();
-  return ZipDecoder().decodeBytes(bytes);
-});
 
-final appDocDirProvider =
-    FutureProvider<Directory>((ref) => getApplicationDocumentsDirectory());
+  void setFile(PlatformFile file) {
+    state = file;
+  }
+}
+
+@riverpod
+class InputArchive extends _$InputArchive {
+  @override
+  Archive? build() {
+    final file = ref.watch(inputFileProvider);
+    if (file == null) {
+      return null;
+    }
+    final bytes = File(file.path!).readAsBytesSync();
+    return ZipDecoder().decodeBytes(bytes);
+  }
+}
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final file = ref.watch(fileProvider);
-    final archive = ref.watch(archiveProvider);
+    final file = ref.watch(inputFileProvider);
+    final archive = ref.watch(inputArchiveProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -42,37 +53,35 @@ class HomePage extends ConsumerWidget {
           final fileResult = await FilePicker.platform
               .pickFiles(type: FileType.custom, allowedExtensions: ['zip']);
           if (fileResult != null) {
-            ref.read(fileProvider.notifier).state = fileResult.files.first;
+            ref
+                .read(inputFileProvider.notifier)
+                .setFile(fileResult.files.first);
           }
         },
       ),
       body: archive == null
           ? const SizedBox.shrink()
-          : PageView.builder(
-              itemCount: archive.files
-                  .where((element) => !element.name.startsWith('__MACOSX'))
-                  .length,
+          : ListView.builder(
+              itemCount: archive.files.length,
               controller: PageController(initialPage: 4),
               itemBuilder: (context, i) {
-                return ref.watch(appDocDirProvider).whenData(
-                  (value) {
-                    final tmp = value.path;
-                    final files = archive.files
-                        .where(
-                          (element) => !element.name.startsWith('__MACOSX'),
-                        )
-                        .toList();
-                    final file = files[i];
-                    if (!file.isFile) {
-                      return const Text('not file');
-                    }
-                    final outputStream = OutputFileStream('$tmp/${file.name}');
-                    file.writeContent(outputStream);
-                    outputStream.close();
-                    final outputFile = File('$tmp/${file.name}');
-                    return Image.file(outputFile);
-                  },
-                ).value;
+                final files = archive.files;
+                final file = files[i];
+                if (file.isFile) {
+                  return ListTile(
+                    leading: const Icon(Icons.image),
+                    title: Text(file.name),
+                  );
+                }
+                return ListTile(
+                  leading: const Icon(Icons.folder),
+                  title: Text(file.name),
+                );
+                // final outputStream = OutputFileStream('$tmp/${file.name}');
+                // file.writeContent(outputStream);
+                // outputStream.close();
+                // final outputFile = File('$tmp/${file.name}');
+                // return Image.file(outputFile);
               },
             ),
     );
