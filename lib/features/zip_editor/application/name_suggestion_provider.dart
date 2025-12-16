@@ -23,4 +23,13 @@ class NameSuggestion extends _$NameSuggestion {
         .where((e) => e.isNotEmpty)
         .toList();
   }
+
+  void add(String name) {
+    if (state.contains(name)) return;
+    state = [...state, name];
+  }
+
+  void remove(String name) {
+    state = state.where((e) => e != name).toList();
+  }
 }

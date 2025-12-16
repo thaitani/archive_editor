@@ -47,12 +47,56 @@ class SettingsPage extends ConsumerWidget {
           : ListView.builder(
               itemCount: suggestions.length,
               itemBuilder: (context, index) {
+                final suggestion = suggestions[index];
                 return ListTile(
-                  title: Text(suggestions[index]),
+                  title: Text(suggestion),
                   leading: const Icon(Icons.label_outline),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () {
+                      ref
+                          .read(nameSuggestionProvider.notifier)
+                          .remove(suggestion);
+                    },
+                  ),
                 );
               },
             ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add),
+        onPressed: () {
+          showDialog<void>(
+            context: context,
+            builder: (context) {
+              final controller = TextEditingController();
+              return AlertDialog(
+                title: const Text('Add Name'),
+                content: TextField(
+                  controller: controller,
+                  autofocus: true,
+                  decoration: const InputDecoration(labelText: 'Name'),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      final text = controller.text.trim();
+                      if (text.isNotEmpty) {
+                        ref.read(nameSuggestionProvider.notifier).add(text);
+                      }
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Add'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
