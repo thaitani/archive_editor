@@ -30,8 +30,8 @@ class ImageGrid extends ConsumerWidget {
         return Card(
           clipBehavior: Clip.antiAlias,
           child: InkWell(
-            onTap: () {
-              showDialog<void>(
+            onTap: () async {
+              await showDialog<void>(
                 context: context,
                 builder: (context) => Dialog(
                   backgroundColor: Colors.transparent,

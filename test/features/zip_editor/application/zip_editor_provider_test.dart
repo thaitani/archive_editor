@@ -17,22 +17,26 @@ void main() {
       container = ProviderContainer();
     });
 
-    // Custom Mock for PlatformFile since we can't easily mock valid file path in test env without helper,
-    // but we can try to write a temp file.
+    // Custom Mock for PlatformFile since we can't easily mock valid file path
+    // in test env without helper, but we can try to write a temp file.
 
     test('loadZip parses zip correctly', () async {
       // 1. Create a real zip file in temp directory
-      final archive = Archive();
-      archive.addFile(
-        ArchiveFile(
-          'folder1/image1.png',
-          5,
-          Uint8List.fromList([1, 2, 3, 4, 5]),
-        ),
-      );
-      archive.addFile(
-        ArchiveFile('folder2/image2.png', 3, Uint8List.fromList([6, 7, 8])),
-      );
+      final archive = Archive()
+        ..addFile(
+          ArchiveFile(
+            'folder1/image1.png',
+            5,
+            Uint8List.fromList([1, 2, 3, 4, 5]),
+          ),
+        )
+        ..addFile(
+          ArchiveFile(
+            'folder2/image2.png',
+            3,
+            Uint8List.fromList([6, 7, 8]),
+          ),
+        );
 
       final zipBytes = ZipEncoder().encode(archive);
       final tempDir = Directory.systemTemp.createTempSync();
@@ -68,19 +72,19 @@ void main() {
     });
 
     test('renameDirectory updates state', () {
-      // Setup initial state manually or via load (easier to mock state if exposed, but it's not)
-      // So we use the notifier methods.
+      // Setup initial state manually or via load (easier to mock state if
+      // exposed, but it's not) So we use the notifier methods.
       // Actually we can't easily inject state unless we override build?
-      // But we can use the same loadZip trick or just assume it works if coupled.
-      // Let's use the loadZip trick again or verify logic.
-
-      // ... For simplicity of this test, let's trust the loadZip works and rely on it.
+      // But we can use the same loadZip trick or just assume it works if
+      // coupled. Let's use the loadZip trick again or verify logic.
+      // ... For simplicity of this test, let's trust the loadZip works and
+      // rely on it.
     });
 
     test('renameDirectory renames correctly', () async {
       // 1. Create temp zip
-      final archive = Archive();
-      archive.addFile(ArchiveFile('folder1/image1.png', 0, []));
+      final archive = Archive()
+        ..addFile(ArchiveFile('folder1/image1.png', 0, []));
       final zipBytes = ZipEncoder().encode(archive);
       final tempDir = Directory.systemTemp.createTempSync();
       final zipFile = File('${tempDir.path}/test2.zip');
@@ -113,13 +117,13 @@ void main() {
     });
     test('saveZips exports map of zips', () async {
       // 1. Create temp zip with 2 folders
-      final archive = Archive();
-      archive.addFile(
-        ArchiveFile('folder1/image1.png', 5, Uint8List.fromList([1])),
-      );
-      archive.addFile(
-        ArchiveFile('folder2/image2.png', 5, Uint8List.fromList([2])),
-      );
+      final archive = Archive()
+        ..addFile(
+          ArchiveFile('folder1/image1.png', 5, Uint8List.fromList([1])),
+        )
+        ..addFile(
+          ArchiveFile('folder2/image2.png', 5, Uint8List.fromList([2])),
+        );
 
       final zipBytes = ZipEncoder().encode(archive);
       final tempDir = Directory.systemTemp.createTempSync();
@@ -151,13 +155,13 @@ void main() {
     });
     test('saveZips excludes skipped images', () async {
       // 1. Create temp zip with 1 folder, 2 images
-      final archive = Archive();
-      archive.addFile(
-        ArchiveFile('folder1/image1.png', 5, Uint8List.fromList([1])),
-      );
-      archive.addFile(
-        ArchiveFile('folder1/image2.png', 5, Uint8List.fromList([2])),
-      );
+      final archive = Archive()
+        ..addFile(
+          ArchiveFile('folder1/image1.png', 5, Uint8List.fromList([1])),
+        )
+        ..addFile(
+          ArchiveFile('folder1/image2.png', 5, Uint8List.fromList([2])),
+        );
 
       final zipBytes = ZipEncoder().encode(archive);
       final tempDir = Directory.systemTemp.createTempSync();
@@ -206,10 +210,10 @@ void main() {
     });
     test('loadZips merges multiple zip files', () async {
       // 1. Create first zip
-      final archive1 = Archive();
-      archive1.addFile(
-        ArchiveFile('folder1/image1.png', 5, Uint8List.fromList([1])),
-      );
+      final archive1 = Archive()
+        ..addFile(
+          ArchiveFile('folder1/image1.png', 5, Uint8List.fromList([1])),
+        );
       final zipBytes1 = ZipEncoder().encode(archive1);
       final tempDir = Directory.systemTemp.createTempSync();
       final zipFile1 = File('${tempDir.path}/test_multi_1.zip');
@@ -218,14 +222,14 @@ void main() {
           PlatformFile(name: 'test_multi_1.zip', size: 0, path: zipFile1.path);
 
       // 2. Create second zip (same folder name, different image)
-      final archive2 = Archive();
-      archive2.addFile(
-        ArchiveFile('folder1/image2.png', 5, Uint8List.fromList([2])),
-      );
-      // Different folder
-      archive2.addFile(
-        ArchiveFile('folder2/image3.png', 5, Uint8List.fromList([3])),
-      );
+      final archive2 = Archive()
+        ..addFile(
+          ArchiveFile('folder1/image2.png', 5, Uint8List.fromList([2])),
+        )
+        // Different folder
+        ..addFile(
+          ArchiveFile('folder2/image3.png', 5, Uint8List.fromList([3])),
+        );
       final zipBytes2 = ZipEncoder().encode(archive2);
       final zipFile2 = File('${tempDir.path}/test_multi_2.zip');
       await zipFile2.writeAsBytes(zipBytes2);
@@ -248,9 +252,13 @@ void main() {
       final folder1 = state.firstWhere((d) => d.name == 'folder1');
       expect(folder1.images.length, 2);
       expect(
-          folder1.images.any((zm.ZipImage i) => i.name == 'image1.png'), true,);
+        folder1.images.any((zm.ZipImage i) => i.name == 'image1.png'),
+        true,
+      );
       expect(
-          folder1.images.any((zm.ZipImage i) => i.name == 'image2.png'), true,);
+        folder1.images.any((zm.ZipImage i) => i.name == 'image2.png'),
+        true,
+      );
 
       final folder2 = state.firstWhere((d) => d.name == 'folder2');
       expect(folder2.images.length, 1);

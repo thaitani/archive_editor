@@ -129,7 +129,7 @@ class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
                       });
                     },
                     checkedDirectories: _checkedFolders,
-                    onDirectoryChecked: (name, isChecked) {
+                    onDirectoryChecked: (name, {required isChecked}) {
                       setState(() {
                         if (isChecked) {
                           _checkedFolders.add(name);

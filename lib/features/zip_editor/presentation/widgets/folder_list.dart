@@ -17,7 +17,7 @@ class FolderList extends ConsumerStatefulWidget {
   final ValueChanged<ZipDirectory> onDirectorySelected;
   final ZipDirectory? selectedDirectory;
   final Set<String> checkedDirectories;
-  final void Function(String, bool) onDirectoryChecked;
+  final void Function(String, {required bool isChecked}) onDirectoryChecked;
 
   @override
   ConsumerState<FolderList> createState() => _FolderListState();
@@ -57,14 +57,16 @@ class _FolderListState extends ConsumerState<FolderList> {
               FocusNode fieldFocusNode,
               VoidCallback onFieldSubmitted,
             ) {
-              // Sync local controller with field controller if needed or just use field controller
+              // Sync local controller with field controller if needed or
+              // just use field controller
               // Effectively we want to pre-fill it.
               if (fieldTextEditingController.text.isEmpty &&
                   _renameController.text.isNotEmpty) {
                 fieldTextEditingController.text = _renameController.text;
               }
 
-              // We need to keep our _renameController in sync for the "Rename" button
+              // We need to keep our _renameController in sync for the
+              // "Rename" button
               fieldTextEditingController.addListener(() {
                 _renameController.text = fieldTextEditingController.text;
               });
@@ -99,7 +101,8 @@ class _FolderListState extends ConsumerState<FolderList> {
                     var newName = baseNewName;
                     if (newName == targetName) continue;
 
-                    // Check for any 2-3 digit numbers, taking the last one found
+                    // Check for any 2-3 digit numbers, taking the last one
+                    // found
                     final matches = RegExp(r'(\d{2,3})').allMatches(targetName);
                     if (matches.isNotEmpty) {
                       final suffix = matches.last.group(0)!;
@@ -143,7 +146,7 @@ class _FolderListState extends ConsumerState<FolderList> {
             value: widget.checkedDirectories.contains(directory.name),
             onChanged: (value) => widget.onDirectoryChecked(
               directory.name,
-              value ?? false,
+              isChecked: value ?? false,
             ),
           ),
           title: Text(directory.name),

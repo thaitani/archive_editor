@@ -10,8 +10,8 @@ class ConfigLoadButton extends ConsumerWidget {
     return IconButton(
       icon: const Icon(Icons.settings),
       tooltip: 'Load Name Config',
-      onPressed: () {
-        const SettingsRoute().push<void>(context);
+      onPressed: () async {
+        await const SettingsRoute().push<void>(context);
       },
     );
   }

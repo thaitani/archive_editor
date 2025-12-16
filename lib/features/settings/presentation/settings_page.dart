@@ -87,8 +87,8 @@ class SettingsPage extends ConsumerWidget {
             ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
-        onPressed: () {
-          showDialog<void>(
+        onPressed: () async {
+          await showDialog<void>(
             context: context,
             builder: (context) {
               final controller = TextEditingController();
