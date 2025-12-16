@@ -65,17 +65,23 @@ class ZipEditor extends _$ZipEditor {
     ];
   }
 
-  Uint8List? saveZip() {
-    final archive = Archive();
+  Map<String, Uint8List> saveZips() {
+    final result = <String, Uint8List>{};
 
     for (final dir in state.cast<ZipDirectory>()) {
+      final archive = Archive();
       for (final img in dir.images) {
-        final path = dir.name == 'Root' ? img.name : '${dir.name}/${img.name}';
-        final file = ArchiveFile(path, img.content.length, img.content);
+        // Since we are creating a zip per folder,
+        // the file path inside zip should be just the image name.
+        final file = ArchiveFile(img.name, img.content.length, img.content);
         archive.addFile(file);
       }
+
+      final zipBytes = ZipEncoder().encode(archive);
+      // Key is "FolderName.zip"
+      result['${dir.name}.zip'] = Uint8List.fromList(zipBytes);
     }
 
-    return ZipEncoder().encode(archive) as Uint8List?;
+    return result;
   }
 }

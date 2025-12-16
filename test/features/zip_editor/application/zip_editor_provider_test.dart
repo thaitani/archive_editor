@@ -110,5 +110,41 @@ void main() {
 
       tempDir.deleteSync(recursive: true);
     });
+    test('saveZips exports map of zips', () async {
+      // 1. Create temp zip with 2 folders
+      final archive = Archive();
+      archive.addFile(
+          ArchiveFile('folder1/image1.png', 5, Uint8List.fromList([1])),);
+      archive.addFile(
+          ArchiveFile('folder2/image2.png', 5, Uint8List.fromList([2])),);
+
+      final zipBytes = ZipEncoder().encode(archive);
+      final tempDir = Directory.systemTemp.createTempSync();
+      final zipFile = File('${tempDir.path}/test3.zip');
+      await zipFile.writeAsBytes(zipBytes);
+      final platformFile =
+          PlatformFile(name: 'test3.zip', size: 0, path: zipFile.path);
+
+      // Keep provider alive
+      final subscription = container.listen(zipEditorProvider, (_, __) {});
+
+      await container.read(zipEditorProvider.notifier).loadZip(platformFile);
+
+      // 2. Save
+      final result = container.read(zipEditorProvider.notifier).saveZips();
+
+      // 3. Verify
+      expect(result.length, 2);
+      expect(result.containsKey('folder1.zip'), true);
+      expect(result.containsKey('folder2.zip'), true);
+
+      // Verify content of one zip (should contain image at root)
+      final folder1Zip = ZipDecoder().decodeBytes(result['folder1.zip']!);
+      expect(folder1Zip.length, 1);
+      expect(folder1Zip.first.name, 'image1.png');
+
+      subscription.close();
+      tempDir.deleteSync(recursive: true);
+    });
   });
 }

@@ -56,23 +56,34 @@ class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
           IconButton(
             icon: const Icon(Icons.save),
             onPressed: () async {
-              final bytes = ref.read(zipEditorProvider.notifier).saveZip();
-              if (bytes == null) return;
+              final zips = ref.read(zipEditorProvider.notifier).saveZips();
+              if (zips.isEmpty) return;
 
-              final result = await FilePicker.platform.saveFile(
-                dialogTitle: 'Save Zip',
-                fileName: 'edited_archive.zip',
-                type: FileType.custom,
-                allowedExtensions: ['zip'],
+              final directoryPath = await FilePicker.platform.getDirectoryPath(
+                dialogTitle: 'Select Directory to Save Zips',
               );
 
-              if (result != null) {
-                final file = File(result);
-                await file.writeAsBytes(bytes);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Saved successfully!')),
-                  );
+              if (directoryPath != null) {
+                try {
+                  for (final entry in zips.entries) {
+                    final file = File('$directoryPath/${entry.key}');
+                    await file.writeAsBytes(entry.value);
+                  }
+
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content:
+                            Text('Saved ${zips.length} zips successfully!'),
+                      ),
+                    );
+                  }
+                } on Object catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to save zips: $e')),
+                    );
+                  }
                 }
               }
             },
