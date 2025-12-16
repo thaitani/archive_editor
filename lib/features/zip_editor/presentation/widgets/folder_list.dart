@@ -1,3 +1,4 @@
+import 'package:archive_editor/features/zip_editor/application/name_suggestion_provider.dart';
 import 'package:archive_editor/features/zip_editor/application/zip_editor_provider.dart';
 import 'package:archive_editor/features/zip_editor/domain/zip_models.dart';
 import 'package:flutter/material.dart';
@@ -31,12 +32,48 @@ class _FolderListState extends ConsumerState<FolderList> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Rename Folder'),
-          content: TextField(
-            controller: _renameController,
-            autofocus: true,
-            decoration: const InputDecoration(
-              labelText: 'New Name',
-            ),
+          content: Autocomplete<String>(
+            optionsBuilder: (TextEditingValue textEditingValue) {
+              final suggestions = ref.read(nameSuggestionProvider);
+              if (textEditingValue.text == '') {
+                return const Iterable<String>.empty();
+              }
+              return suggestions.where((String option) {
+                return option
+                    .toLowerCase()
+                    .contains(textEditingValue.text.toLowerCase());
+              });
+            },
+            onSelected: (String selection) {
+              _renameController.text = selection;
+            },
+            fieldViewBuilder: (
+              BuildContext context,
+              TextEditingController fieldTextEditingController,
+              FocusNode fieldFocusNode,
+              VoidCallback onFieldSubmitted,
+            ) {
+              // Sync local controller with field controller if needed or just use field controller
+              // Effectively we want to pre-fill it.
+              if (fieldTextEditingController.text.isEmpty &&
+                  _renameController.text.isNotEmpty) {
+                fieldTextEditingController.text = _renameController.text;
+              }
+
+              // We need to keep our _renameController in sync for the "Rename" button
+              fieldTextEditingController.addListener(() {
+                _renameController.text = fieldTextEditingController.text;
+              });
+
+              return TextField(
+                controller: fieldTextEditingController,
+                focusNode: fieldFocusNode,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  labelText: 'New Name',
+                ),
+              );
+            },
           ),
           actions: [
             TextButton(

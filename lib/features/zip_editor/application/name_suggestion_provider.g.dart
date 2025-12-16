@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'zip_editor_provider.dart';
+part of 'name_suggestion_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,50 +9,50 @@ part of 'zip_editor_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(ZipEditor)
-const zipEditorProvider = ZipEditorProvider._();
+@ProviderFor(NameSuggestion)
+const nameSuggestionProvider = NameSuggestionProvider._();
 
-final class ZipEditorProvider
-    extends $NotifierProvider<ZipEditor, List<ZipDirectory>> {
-  const ZipEditorProvider._()
+final class NameSuggestionProvider
+    extends $NotifierProvider<NameSuggestion, List<String>> {
+  const NameSuggestionProvider._()
       : super(
           from: null,
           argument: null,
           retry: null,
-          name: r'zipEditorProvider',
+          name: r'nameSuggestionProvider',
           isAutoDispose: true,
           dependencies: null,
           $allTransitiveDependencies: null,
         );
 
   @override
-  String debugGetCreateSourceHash() => _$zipEditorHash();
+  String debugGetCreateSourceHash() => _$nameSuggestionHash();
 
   @$internal
   @override
-  ZipEditor create() => ZipEditor();
+  NameSuggestion create() => NameSuggestion();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(List<ZipDirectory> value) {
+  Override overrideWithValue(List<String> value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<List<ZipDirectory>>(value),
+      providerOverride: $SyncValueProvider<List<String>>(value),
     );
   }
 }
 
-String _$zipEditorHash() => r'53d32d006d307b640f4567dd7c4ce479383950cd';
+String _$nameSuggestionHash() => r'f8a9ae2719e2dff8a1e0c9a97781f27bbececc2e';
 
-abstract class _$ZipEditor extends $Notifier<List<ZipDirectory>> {
-  List<ZipDirectory> build();
+abstract class _$NameSuggestion extends $Notifier<List<String>> {
+  List<String> build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<List<ZipDirectory>, List<ZipDirectory>>;
+    final ref = this.ref as $Ref<List<String>, List<String>>;
     final element = ref.element as $ClassProviderElement<
-        AnyNotifier<List<ZipDirectory>, List<ZipDirectory>>,
-        List<ZipDirectory>,
+        AnyNotifier<List<String>, List<String>>,
+        List<String>,
         Object?,
         Object?>;
     element.handleValue(ref, created);
