@@ -1,16 +1,17 @@
-
+import 'package:archive_editor/features/zip_editor/application/zip_editor_provider.dart';
 import 'package:archive_editor/features/zip_editor/domain/zip_models.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ImageGrid extends StatelessWidget {
-
+class ImageGrid extends ConsumerWidget {
   const ImageGrid({
-    required this.directory, super.key,
+    required this.directory,
+    super.key,
   });
   final ZipDirectory directory;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (directory.images.isEmpty) {
       return const Center(
         child: Text('No images in this folder'),
@@ -34,7 +35,24 @@ class ImageGrid extends StatelessWidget {
               Image.memory(
                 image.content,
                 fit: BoxFit.cover,
+                color: image.isIncluded
+                    ? null
+                    : Colors.white.withValues(alpha: 0.7),
+                colorBlendMode: image.isIncluded ? null : BlendMode.lighten,
                 errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+              ),
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Checkbox(
+                  value: image.isIncluded,
+                  onChanged: (value) {
+                    ref.read(zipEditorProvider.notifier).toggleImageInclusion(
+                          directory.name,
+                          image.name,
+                        );
+                  },
+                ),
               ),
               Positioned(
                 bottom: 0,

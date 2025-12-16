@@ -65,12 +65,31 @@ class ZipEditor extends _$ZipEditor {
     ];
   }
 
+  void toggleImageInclusion(String directoryName, String imageName) {
+    state = [
+      for (final ZipDirectory dir in state.cast<ZipDirectory>())
+        if (dir.name == directoryName)
+          dir.copyWith(
+            images: [
+              for (final img in dir.images)
+                if (img.name == imageName)
+                  img.copyWith(isIncluded: !img.isIncluded)
+                else
+                  img,
+            ],
+          )
+        else
+          dir,
+    ];
+  }
+
   Map<String, Uint8List> saveZips() {
     final result = <String, Uint8List>{};
 
     for (final dir in state.cast<ZipDirectory>()) {
       final archive = Archive();
       for (final img in dir.images) {
+        if (!img.isIncluded) continue;
         // Since we are creating a zip per folder,
         // the file path inside zip should be just the image name.
         final file = ArchiveFile(img.name, img.content.length, img.content);

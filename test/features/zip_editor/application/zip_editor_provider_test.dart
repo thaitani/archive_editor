@@ -4,6 +4,8 @@ import 'dart:typed_data';
 
 import 'package:archive/archive.dart' hide ZipDirectory;
 import 'package:archive_editor/features/zip_editor/application/zip_editor_provider.dart';
+import 'package:archive_editor/features/zip_editor/domain/zip_models.dart'
+    as zm;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -114,9 +116,11 @@ void main() {
       // 1. Create temp zip with 2 folders
       final archive = Archive();
       archive.addFile(
-          ArchiveFile('folder1/image1.png', 5, Uint8List.fromList([1])),);
+        ArchiveFile('folder1/image1.png', 5, Uint8List.fromList([1])),
+      );
       archive.addFile(
-          ArchiveFile('folder2/image2.png', 5, Uint8List.fromList([2])),);
+        ArchiveFile('folder2/image2.png', 5, Uint8List.fromList([2])),
+      );
 
       final zipBytes = ZipEncoder().encode(archive);
       final tempDir = Directory.systemTemp.createTempSync();
@@ -139,6 +143,61 @@ void main() {
       expect(result.containsKey('folder2.zip'), true);
 
       // Verify content of one zip (should contain image at root)
+      final folder1Zip = ZipDecoder().decodeBytes(result['folder1.zip']!);
+      expect(folder1Zip.length, 1);
+      expect(folder1Zip.first.name, 'image1.png');
+
+      subscription.close();
+      tempDir.deleteSync(recursive: true);
+    });
+    test('saveZips excludes skipped images', () async {
+      // 1. Create temp zip with 1 folder, 2 images
+      final archive = Archive();
+      archive.addFile(
+        ArchiveFile('folder1/image1.png', 5, Uint8List.fromList([1])),
+      );
+      archive.addFile(
+        ArchiveFile('folder1/image2.png', 5, Uint8List.fromList([2])),
+      );
+
+      final zipBytes = ZipEncoder().encode(archive);
+      final tempDir = Directory.systemTemp.createTempSync();
+      final zipFile = File('${tempDir.path}/test4.zip');
+      await zipFile.writeAsBytes(zipBytes);
+      final platformFile =
+          PlatformFile(name: 'test4.zip', size: 0, path: zipFile.path);
+
+      // Keep provider alive
+      final subscription = container.listen(zipEditorProvider, (_, __) {});
+
+      await container.read(zipEditorProvider.notifier).loadZip(platformFile);
+
+      // 2. Toggle exclusion for image2
+      container
+          .read(zipEditorProvider.notifier)
+          .toggleImageInclusion('folder1', 'image2.png');
+
+      // Verify state update
+      final state = container.read(zipEditorProvider);
+      final folder1 = state.firstWhere((d) => d.name == 'folder1');
+      expect(
+        folder1.images
+            .firstWhere((zm.ZipImage i) => i.name == 'image1.png')
+            .isIncluded,
+        true,
+      );
+      expect(
+        folder1.images
+            .firstWhere((zm.ZipImage i) => i.name == 'image2.png')
+            .isIncluded,
+        false,
+      );
+
+      // 3. Save
+      final result = container.read(zipEditorProvider.notifier).saveZips();
+
+      // 4. Verify output zip content
+      expect(result.containsKey('folder1.zip'), true);
       final folder1Zip = ZipDecoder().decodeBytes(result['folder1.zip']!);
       expect(folder1Zip.length, 1);
       expect(folder1Zip.first.name, 'image1.png');
