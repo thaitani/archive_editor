@@ -82,8 +82,19 @@ class _FolderListState extends ConsumerState<FolderList> {
             ),
             TextButton(
               onPressed: () {
-                final newName = _renameController.text;
+                var newName = _renameController.text;
                 if (newName.isNotEmpty && newName != directory.name) {
+                  // Check for any 2-3 digit numbers, taking the last one found
+                  final matches =
+                      RegExp(r'(\d{2,3})').allMatches(directory.name);
+                  if (matches.isNotEmpty) {
+                    final suffix = matches.last.group(0)!;
+                    // Check if new name already has this suffix at the end
+                    if (!newName.endsWith(suffix)) {
+                      newName = '$newName v$suffix';
+                    }
+                  }
+
                   ref
                       .read(zipEditorProvider.notifier)
                       .renameDirectory(directory.name, newName);
