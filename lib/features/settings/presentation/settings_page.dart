@@ -15,6 +15,29 @@ class SettingsPage extends ConsumerWidget {
         title: const Text('Settings'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.download),
+            tooltip: 'Export Config File',
+            onPressed: () async {
+              final result = await FilePicker.platform.saveFile(
+                dialogTitle: 'Save Name Config',
+                fileName: 'name_config.txt',
+                allowedExtensions: ['txt'],
+                type: FileType.custom,
+              );
+
+              if (result != null) {
+                await ref
+                    .read(nameSuggestionProvider.notifier)
+                    .saveConfig(result);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Name config saved')),
+                  );
+                }
+              }
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.file_upload),
             tooltip: 'Load Config File',
             onPressed: () async {

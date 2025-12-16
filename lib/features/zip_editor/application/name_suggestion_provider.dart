@@ -32,4 +32,9 @@ class NameSuggestion extends _$NameSuggestion {
   void remove(String name) {
     state = state.where((e) => e != name).toList();
   }
+
+  Future<void> saveConfig(String path) async {
+    final file = File(path);
+    await file.writeAsString(state.join('\n'));
+  }
 }
