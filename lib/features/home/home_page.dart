@@ -1,89 +1,69 @@
-import 'dart:io';
-
-import 'package:archive/archive_io.dart';
+import 'package:archive_editor/features/zip_editor/application/zip_editor_provider.dart';
+import 'package:archive_editor/routes/router.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-part 'home_page.g.dart';
-
-@riverpod
-class InputFile extends _$InputFile {
-  @override
-  PlatformFile? build() {
-    return null;
-  }
-
-  void setFile(PlatformFile file) {
-    state = file;
-  }
-}
-
-@riverpod
-class InputArchive extends _$InputArchive {
-  @override
-  Archive? build() {
-    final file = ref.watch(inputFileProvider);
-    if (file == null) {
-      return null;
-    }
-    final bytes = File(file.path!).readAsBytesSync();
-    return ZipDecoder().decodeBytes(bytes);
-  }
-}
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final file = ref.watch(inputFileProvider);
-    final archive = ref.watch(inputArchiveProvider);
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          file?.name ?? 'No Title',
-        ),
-        backgroundColor: Theme.of(context).secondaryHeaderColor,
+        title: const Text('Archive Editor'),
       ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.file_open),
-        onPressed: () async {
-          final fileResult = await FilePicker.platform
-              .pickFiles(type: FileType.custom, allowedExtensions: ['zip']);
-          if (fileResult != null) {
-            ref
-                .read(inputFileProvider.notifier)
-                .setFile(fileResult.files.first);
-          }
-        },
-      ),
-      body: archive == null
-          ? const SizedBox.shrink()
-          : ListView.builder(
-              itemCount: archive.files.length,
-              controller: PageController(initialPage: 4),
-              itemBuilder: (context, i) {
-                final files = archive.files;
-                final file = files[i];
-                if (file.isFile) {
-                  return ListTile(
-                    leading: const Icon(Icons.image),
-                    title: Text(file.name),
-                  );
-                }
-                return ListTile(
-                  leading: const Icon(Icons.folder),
-                  title: Text(file.name),
-                );
-                // final outputStream = OutputFileStream('$tmp/${file.name}');
-                // file.writeContent(outputStream);
-                // outputStream.close();
-                // final outputFile = File('$tmp/${file.name}');
-                // return Image.file(outputFile);
-              },
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.inventory_2,
+              size: 64,
+              color: Colors.grey,
             ),
+            const SizedBox(height: 16),
+            const Text(
+              'Welcome to Archive Editor',
+              style: TextStyle(fontSize: 24),
+            ),
+            const SizedBox(height: 32),
+            FilledButton.icon(
+              onPressed: () async {
+                final fileResult = await FilePicker.platform.pickFiles(
+                  type: FileType.custom,
+                  allowedExtensions: ['zip'],
+                );
+                if (fileResult != null && fileResult.files.isNotEmpty) {
+                  // Show loading indicator or something?
+                  // For now async await is fine.
+                  try {
+                    await ref
+                        .read(zipEditorProvider.notifier)
+                        .loadZip(fileResult.files.first);
+
+                    if (context.mounted) {
+                      const ZipEditorRoute().go(context);
+                    }
+                  } on Object catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed to load zip: $e')),
+                      );
+                    }
+                  }
+                }
+              },
+              icon: const Icon(Icons.folder_open),
+              label: const Text('Open Zip File'),
+              style: FilledButton.styleFrom(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

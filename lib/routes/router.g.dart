@@ -13,6 +13,12 @@ List<RouteBase> get $appRoutes => [
 RouteBase get $homeRoute => GoRouteData.$route(
       path: '/',
       factory: $HomeRoute._fromState,
+      routes: [
+        GoRouteData.$route(
+          path: 'editor',
+          factory: $ZipEditorRoute._fromState,
+        ),
+      ],
     );
 
 mixin $HomeRoute on GoRouteData {
@@ -21,6 +27,29 @@ mixin $HomeRoute on GoRouteData {
   @override
   String get location => GoRouteData.$location(
         '/',
+      );
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+mixin $ZipEditorRoute on GoRouteData {
+  static ZipEditorRoute _fromState(GoRouterState state) =>
+      const ZipEditorRoute();
+
+  @override
+  String get location => GoRouteData.$location(
+        '/editor',
       );
 
   @override

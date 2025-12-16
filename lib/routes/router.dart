@@ -1,4 +1,5 @@
 import 'package:archive_editor/features/home/home_page.dart';
+import 'package:archive_editor/features/zip_editor/presentation/zip_editor_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -15,10 +16,21 @@ final router = GoRouter(
 
 @TypedGoRoute<HomeRoute>(
   path: '/',
+  routes: [
+    TypedGoRoute<ZipEditorRoute>(path: 'editor'),
+  ],
 )
 class HomeRoute extends GoRouteData with $HomeRoute {
   const HomeRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) => const HomePage();
+}
+
+class ZipEditorRoute extends GoRouteData with $ZipEditorRoute {
+  const ZipEditorRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const ZipEditorPage();
 }
