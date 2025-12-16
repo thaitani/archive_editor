@@ -17,7 +17,7 @@ class FolderList extends ConsumerStatefulWidget {
   final ValueChanged<ZipDirectory> onDirectorySelected;
   final ZipDirectory? selectedDirectory;
   final Set<String> checkedDirectories;
-  final Function(String, bool) onDirectoryChecked;
+  final void Function(String, bool) onDirectoryChecked;
 
   @override
   ConsumerState<FolderList> createState() => _FolderListState();
