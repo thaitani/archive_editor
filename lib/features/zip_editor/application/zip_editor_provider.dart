@@ -17,40 +17,42 @@ class ZipEditor extends _$ZipEditor {
     return [];
   }
 
-  Future<void> loadZip(PlatformFile file) async {
-    final bytes = await File(file.path!).readAsBytes();
-    final archive = ZipDecoder().decodeBytes(bytes);
-
+  Future<void> loadZips(List<PlatformFile> files) async {
     final groupedFiles = <String, List<ZipImage>>{};
 
-    for (final file in archive) {
-      if (!file.isFile) continue;
+    for (final file in files) {
+      final bytes = await File(file.path!).readAsBytes();
+      final archive = ZipDecoder().decodeBytes(bytes);
 
-      // Extract directory name.
-      // archive file name includes path, e.g. "folder/image.png"
-      // or just "image.png" if root.
-      final fileName = file.name;
-      final directoryName = p.dirname(fileName);
+      for (final archiveFile in archive) {
+        if (!archiveFile.isFile) continue;
 
-      // Skip __MACOSX and other hidden folders if necessary,
-      // but strictly following requirement "folders of images".
-      if (directoryName.startsWith('__MACOSX')) continue;
-      if (p.basename(fileName).startsWith('.')) continue;
+        // Extract directory name.
+        // archive file name includes path, e.g. "folder/image.png"
+        // or just "image.png" if root.
+        final fileName = archiveFile.name;
+        final directoryName = p.dirname(fileName);
 
-      // Handle root files if we want, or put them in a "root" folder.
-      // For now, let's treat "." as root.
-      final dirKey = directoryName == '.' ? 'Root' : directoryName;
+        // Skip __MACOSX and other hidden folders if necessary,
+        // but strictly following requirement "folders of images".
+        if (directoryName.startsWith('__MACOSX')) continue;
+        if (p.basename(fileName).startsWith('.')) continue;
 
-      final content = file.content as List<int>;
-      final zipImage = ZipImage(
-        name: p.basename(fileName),
-        content: Uint8List.fromList(content),
-      );
+        // Handle root files if we want, or put them in a "root" folder.
+        // For now, let's treat "." as root.
+        final dirKey = directoryName == '.' ? 'Root' : directoryName;
 
-      if (!groupedFiles.containsKey(dirKey)) {
-        groupedFiles[dirKey] = [];
+        final content = archiveFile.content as List<int>;
+        final zipImage = ZipImage(
+          name: p.basename(fileName),
+          content: Uint8List.fromList(content),
+        );
+
+        if (!groupedFiles.containsKey(dirKey)) {
+          groupedFiles[dirKey] = [];
+        }
+        groupedFiles[dirKey]!.add(zipImage);
       }
-      groupedFiles[dirKey]!.add(zipImage);
     }
 
     state = groupedFiles.entries.map((entry) {

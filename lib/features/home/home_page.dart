@@ -33,6 +33,7 @@ class HomePage extends ConsumerWidget {
                 final fileResult = await FilePicker.platform.pickFiles(
                   type: FileType.custom,
                   allowedExtensions: ['zip'],
+                  allowMultiple: true,
                 );
                 if (fileResult != null && fileResult.files.isNotEmpty) {
                   // Show loading indicator or something?
@@ -40,7 +41,7 @@ class HomePage extends ConsumerWidget {
                   try {
                     await ref
                         .read(zipEditorProvider.notifier)
-                        .loadZip(fileResult.files.first);
+                        .loadZips(fileResult.files);
 
                     if (context.mounted) {
                       const ZipEditorRoute().go(context);

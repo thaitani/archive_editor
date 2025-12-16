@@ -50,7 +50,7 @@ void main() {
       final subscription = container.listen(zipEditorProvider, (_, __) {});
 
       // 2. Load it
-      await container.read(zipEditorProvider.notifier).loadZip(platformFile);
+      await container.read(zipEditorProvider.notifier).loadZips([platformFile]);
       final state = container.read(zipEditorProvider);
 
       subscription.close();
@@ -92,7 +92,7 @@ void main() {
       // Keep provider alive
       final subscription = container.listen(zipEditorProvider, (_, __) {});
 
-      await container.read(zipEditorProvider.notifier).loadZip(platformFile);
+      await container.read(zipEditorProvider.notifier).loadZips([platformFile]);
 
       // 2. Rename
       container
@@ -132,7 +132,7 @@ void main() {
       // Keep provider alive
       final subscription = container.listen(zipEditorProvider, (_, __) {});
 
-      await container.read(zipEditorProvider.notifier).loadZip(platformFile);
+      await container.read(zipEditorProvider.notifier).loadZips([platformFile]);
 
       // 2. Save
       final result = container.read(zipEditorProvider.notifier).saveZips();
@@ -170,7 +170,7 @@ void main() {
       // Keep provider alive
       final subscription = container.listen(zipEditorProvider, (_, __) {});
 
-      await container.read(zipEditorProvider.notifier).loadZip(platformFile);
+      await container.read(zipEditorProvider.notifier).loadZips([platformFile]);
 
       // 2. Toggle exclusion for image2
       container
@@ -201,6 +201,61 @@ void main() {
       final folder1Zip = ZipDecoder().decodeBytes(result['folder1.zip']!);
       expect(folder1Zip.length, 1);
       expect(folder1Zip.first.name, 'image1.png');
+
+      subscription.close();
+      tempDir.deleteSync(recursive: true);
+    });
+    test('loadZips merges multiple zip files', () async {
+      // 1. Create first zip
+      final archive1 = Archive();
+      archive1.addFile(
+        ArchiveFile('folder1/image1.png', 5, Uint8List.fromList([1])),
+      );
+      final zipBytes1 = ZipEncoder().encode(archive1);
+      final tempDir = Directory.systemTemp.createTempSync();
+      final zipFile1 = File('${tempDir.path}/test_multi_1.zip');
+      await zipFile1.writeAsBytes(zipBytes1);
+      final platformFile1 =
+          PlatformFile(name: 'test_multi_1.zip', size: 0, path: zipFile1.path);
+
+      // 2. Create second zip (same folder name, different image)
+      final archive2 = Archive();
+      archive2.addFile(
+        ArchiveFile('folder1/image2.png', 5, Uint8List.fromList([2])),
+      );
+      // Different folder
+      archive2.addFile(
+        ArchiveFile('folder2/image3.png', 5, Uint8List.fromList([3])),
+      );
+      final zipBytes2 = ZipEncoder().encode(archive2);
+      final zipFile2 = File('${tempDir.path}/test_multi_2.zip');
+      await zipFile2.writeAsBytes(zipBytes2);
+      final platformFile2 =
+          PlatformFile(name: 'test_multi_2.zip', size: 0, path: zipFile2.path);
+
+      // Keep provider alive
+      final subscription = container.listen(zipEditorProvider, (_, __) {});
+
+      // 3. Load both
+      await container
+          .read(zipEditorProvider.notifier)
+          .loadZips([platformFile1, platformFile2]);
+
+      final state = container.read(zipEditorProvider);
+
+      // 4. Verify merge
+      expect(state.length, 2);
+
+      final folder1 = state.firstWhere((d) => d.name == 'folder1');
+      expect(folder1.images.length, 2);
+      expect(
+          folder1.images.any((zm.ZipImage i) => i.name == 'image1.png'), true,);
+      expect(
+          folder1.images.any((zm.ZipImage i) => i.name == 'image2.png'), true,);
+
+      final folder2 = state.firstWhere((d) => d.name == 'folder2');
+      expect(folder2.images.length, 1);
+      expect(folder2.images.first.name, 'image3.png');
 
       subscription.close();
       tempDir.deleteSync(recursive: true);
