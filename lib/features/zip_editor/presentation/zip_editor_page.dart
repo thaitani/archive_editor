@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:archive_editor/features/zip_editor/application/name_suggestion_provider.dart';
 import 'package:archive_editor/features/zip_editor/application/zip_editor_provider.dart';
 import 'package:archive_editor/features/zip_editor/domain/zip_models.dart';
+import 'package:archive_editor/features/zip_editor/presentation/widgets/config_load_button.dart';
 import 'package:archive_editor/features/zip_editor/presentation/widgets/folder_list.dart';
 import 'package:archive_editor/features/zip_editor/presentation/widgets/image_grid.dart';
 import 'package:file_picker/file_picker.dart';
@@ -55,26 +55,7 @@ class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
       appBar: AppBar(
         title: const Text('Zip Editor'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: 'Load Name Config',
-            onPressed: () async {
-              final result = await FilePicker.platform.pickFiles(
-                type: FileType.custom,
-                allowedExtensions: ['txt'],
-              );
-              if (result != null && result.files.isNotEmpty) {
-                await ref
-                    .read(nameSuggestionProvider.notifier)
-                    .loadConfig(result.files.first);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Name config loaded')),
-                  );
-                }
-              }
-            },
-          ),
+          const ConfigLoadButton(),
           IconButton(
             icon: const Icon(Icons.save),
             tooltip: 'Save Zips',

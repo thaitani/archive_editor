@@ -1,4 +1,5 @@
 import 'package:archive_editor/features/zip_editor/application/zip_editor_provider.dart';
+import 'package:archive_editor/features/zip_editor/presentation/widgets/config_load_button.dart';
 import 'package:archive_editor/routes/router.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,9 @@ class HomePage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Archive Editor'),
+        actions: const [
+          ConfigLoadButton(),
+        ],
       ),
       body: Center(
         child: Column(
