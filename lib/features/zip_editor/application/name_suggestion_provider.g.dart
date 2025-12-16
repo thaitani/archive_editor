@@ -41,7 +41,7 @@ final class NameSuggestionProvider
   }
 }
 
-String _$nameSuggestionHash() => r'f8a9ae2719e2dff8a1e0c9a97781f27bbececc2e';
+String _$nameSuggestionHash() => r'fc94dd048b761f1439334e6f27a5341ae95cb976';
 
 abstract class _$NameSuggestion extends $Notifier<List<String>> {
   List<String> build();

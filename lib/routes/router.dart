@@ -1,4 +1,5 @@
 import 'package:archive_editor/features/home/home_page.dart';
+import 'package:archive_editor/features/settings/presentation/settings_page.dart';
 import 'package:archive_editor/features/zip_editor/presentation/zip_editor_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -33,4 +34,13 @@ class ZipEditorRoute extends GoRouteData with $ZipEditorRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) =>
       const ZipEditorPage();
+}
+
+@TypedGoRoute<SettingsRoute>(path: '/settings')
+class SettingsRoute extends GoRouteData with $SettingsRoute {
+  const SettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const SettingsPage();
 }
