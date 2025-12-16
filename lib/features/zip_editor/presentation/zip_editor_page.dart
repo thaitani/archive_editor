@@ -19,16 +19,19 @@ class ZipEditorPage extends ConsumerStatefulWidget {
 class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
   ZipDirectory? _selectedDirectory;
   final Set<String> _checkedFolders = {};
+  bool _isInitialized = false;
 
   @override
   Widget build(BuildContext context) {
     final directories = ref.watch(zipEditorProvider).cast<ZipDirectory>();
 
     // Auto-select first directory if none selected and directories exist
-    if (_selectedDirectory == null && directories.isNotEmpty) {
+    if (!_isInitialized && directories.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           _selectedDirectory = directories.first;
+          _checkedFolders.addAll(directories.map((d) => d.name));
+          _isInitialized = true;
         });
       });
     } else if (_selectedDirectory != null &&
