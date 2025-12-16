@@ -9,11 +9,15 @@ class FolderList extends ConsumerStatefulWidget {
     required this.directories,
     required this.onDirectorySelected,
     required this.selectedDirectory,
+    required this.checkedDirectories,
+    required this.onDirectoryChecked,
     super.key,
   });
   final List<ZipDirectory> directories;
   final ValueChanged<ZipDirectory> onDirectorySelected;
   final ZipDirectory? selectedDirectory;
+  final Set<String> checkedDirectories;
+  final Function(String, bool) onDirectoryChecked;
 
   @override
   ConsumerState<FolderList> createState() => _FolderListState();
@@ -82,22 +86,33 @@ class _FolderListState extends ConsumerState<FolderList> {
             ),
             TextButton(
               onPressed: () {
-                var newName = _renameController.text;
-                if (newName.isNotEmpty && newName != directory.name) {
-                  // Check for any 2-3 digit numbers, taking the last one found
-                  final matches =
-                      RegExp(r'(\d{2,3})').allMatches(directory.name);
-                  if (matches.isNotEmpty) {
-                    final suffix = matches.last.group(0)!;
-                    // Check if new name already has this suffix at the end
-                    if (!newName.endsWith(suffix)) {
-                      newName = '$newName v$suffix';
-                    }
+                final baseNewName = _renameController.text;
+                if (baseNewName.isNotEmpty) {
+                  final targets = <String>{};
+                  if (widget.checkedDirectories.contains(directory.name)) {
+                    targets.addAll(widget.checkedDirectories);
+                  } else {
+                    targets.add(directory.name);
                   }
 
-                  ref
-                      .read(zipEditorProvider.notifier)
-                      .renameDirectory(directory.name, newName);
+                  for (final targetName in targets) {
+                    var newName = baseNewName;
+                    if (newName == targetName) continue;
+
+                    // Check for any 2-3 digit numbers, taking the last one found
+                    final matches = RegExp(r'(\d{2,3})').allMatches(targetName);
+                    if (matches.isNotEmpty) {
+                      final suffix = matches.last.group(0)!;
+                      // Check if new name already has this suffix at the end
+                      if (!newName.endsWith(suffix)) {
+                        newName = '$newName v$suffix';
+                      }
+                    }
+
+                    ref
+                        .read(zipEditorProvider.notifier)
+                        .renameDirectory(targetName, newName);
+                  }
                 }
                 Navigator.of(context).pop();
               },
@@ -124,7 +139,13 @@ class _FolderListState extends ConsumerState<FolderList> {
         final isSelected = widget.selectedDirectory == directory;
         return ListTile(
           selected: isSelected,
-          leading: const Icon(Icons.folder),
+          leading: Checkbox(
+            value: widget.checkedDirectories.contains(directory.name),
+            onChanged: (value) => widget.onDirectoryChecked(
+              directory.name,
+              value ?? false,
+            ),
+          ),
           title: Text(directory.name),
           onTap: () => widget.onDirectorySelected(directory),
           trailing: IconButton(

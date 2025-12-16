@@ -18,6 +18,7 @@ class ZipEditorPage extends ConsumerStatefulWidget {
 
 class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
   ZipDirectory? _selectedDirectory;
+  final Set<String> _checkedFolders = {};
 
   @override
   Widget build(BuildContext context) {
@@ -116,14 +117,46 @@ class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
         children: [
           SizedBox(
             width: 250,
-            child: FolderList(
-              directories: directories,
-              selectedDirectory: _selectedDirectory,
-              onDirectorySelected: (dir) {
-                setState(() {
-                  _selectedDirectory = dir;
-                });
-              },
+            child: Column(
+              children: [
+                if (directories.isNotEmpty)
+                  CheckboxListTile(
+                    controlAffinity: ListTileControlAffinity.leading,
+                    title: const Text('Select All'),
+                    value: _checkedFolders.length == directories.length,
+                    onChanged: (value) {
+                      setState(() {
+                        if (value ?? false) {
+                          _checkedFolders
+                              .addAll(directories.map((d) => d.name));
+                        } else {
+                          _checkedFolders.clear();
+                        }
+                      });
+                    },
+                  ),
+                Expanded(
+                  child: FolderList(
+                    directories: directories,
+                    selectedDirectory: _selectedDirectory,
+                    onDirectorySelected: (dir) {
+                      setState(() {
+                        _selectedDirectory = dir;
+                      });
+                    },
+                    checkedDirectories: _checkedFolders,
+                    onDirectoryChecked: (name, isChecked) {
+                      setState(() {
+                        if (isChecked) {
+                          _checkedFolders.add(name);
+                        } else {
+                          _checkedFolders.remove(name);
+                        }
+                      });
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
           const VerticalDivider(width: 1),
