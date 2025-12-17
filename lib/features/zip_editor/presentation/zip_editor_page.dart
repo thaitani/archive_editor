@@ -57,56 +57,55 @@ class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Zip Editor'),
-        actions: [
-          const ConfigLoadButton(),
-          IconButton(
-            icon: const Icon(Icons.save),
-            tooltip: 'Save Zips',
-            onPressed: () async {
-              final zips = ref
-                  .read(zipEditorProvider.notifier)
-                  .saveZips(filterIds: _checkedFolders);
-              if (zips.isEmpty) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('No folders selected to save.'),
-                    ),
-                  );
-                }
-                return;
-              }
-
-              final directoryPath = await FilePicker.platform.getDirectoryPath(
-                dialogTitle: 'Select Directory to Save Zips',
-              );
-
-              if (directoryPath != null) {
-                try {
-                  for (final entry in zips.entries) {
-                    final file = File('$directoryPath/${entry.key}');
-                    await file.writeAsBytes(entry.value);
-                  }
-
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content:
-                            Text('Saved ${zips.length} zips successfully!'),
-                      ),
-                    );
-                  }
-                } on Object catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to save zips: $e')),
-                    );
-                  }
-                }
-              }
-            },
-          ),
+        actions: const [
+          ConfigLoadButton(),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        tooltip: 'Save Zips',
+        onPressed: () async {
+          final zips = ref
+              .read(zipEditorProvider.notifier)
+              .saveZips(filterIds: _checkedFolders);
+          if (zips.isEmpty) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('No folders selected to save.'),
+                ),
+              );
+            }
+            return;
+          }
+
+          final directoryPath = await FilePicker.platform.getDirectoryPath(
+            dialogTitle: 'Select Directory to Save Zips',
+          );
+
+          if (directoryPath != null) {
+            try {
+              for (final entry in zips.entries) {
+                final file = File('$directoryPath/${entry.key}');
+                await file.writeAsBytes(entry.value);
+              }
+
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Saved ${zips.length} zips successfully!'),
+                  ),
+                );
+              }
+            } on Object catch (e) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Failed to save zips: $e')),
+                );
+              }
+            }
+          }
+        },
+        child: const Icon(Icons.save),
       ),
       body: Row(
         children: [
