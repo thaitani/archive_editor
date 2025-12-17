@@ -2,6 +2,7 @@ import 'package:archive_editor/features/zip_editor/application/name_suggestion_p
 import 'package:archive_editor/features/zip_editor/application/zip_editor_provider.dart';
 import 'package:archive_editor/features/zip_editor/domain/zip_models.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class FolderList extends ConsumerStatefulWidget {
@@ -36,50 +37,85 @@ class _FolderListState extends ConsumerState<FolderList> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Rename Folder'),
-          content: Autocomplete<String>(
-            optionsBuilder: (TextEditingValue textEditingValue) {
-              final suggestions = ref.read(nameSuggestionProvider);
-              if (textEditingValue.text == '') {
-                return const Iterable<String>.empty();
-              }
-              return suggestions.where((String option) {
-                return option
-                    .toLowerCase()
-                    .contains(textEditingValue.text.toLowerCase());
-              });
-            },
-            onSelected: (String selection) {
-              _renameController.text = selection;
-            },
-            fieldViewBuilder: (
-              BuildContext context,
-              TextEditingController fieldTextEditingController,
-              FocusNode fieldFocusNode,
-              VoidCallback onFieldSubmitted,
-            ) {
-              // Sync local controller with field controller if needed or
-              // just use field controller
-              // Effectively we want to pre-fill it.
-              if (fieldTextEditingController.text.isEmpty &&
-                  _renameController.text.isNotEmpty) {
-                fieldTextEditingController.text = _renameController.text;
-              }
+          content: Column(
+            children: [
+              Autocomplete<String>(
+                optionsBuilder: (TextEditingValue textEditingValue) {
+                  final suggestions = ref.read(nameSuggestionProvider);
+                  if (textEditingValue.text == '') {
+                    return const Iterable<String>.empty();
+                  }
+                  return suggestions.where((String option) {
+                    return option
+                        .toLowerCase()
+                        .contains(textEditingValue.text.toLowerCase());
+                  });
+                },
+                onSelected: (String selection) {
+                  _renameController.text = selection;
+                },
+                fieldViewBuilder: (
+                  BuildContext context,
+                  TextEditingController fieldTextEditingController,
+                  FocusNode fieldFocusNode,
+                  VoidCallback onFieldSubmitted,
+                ) {
+                  // Sync local controller with field controller if needed or
+                  // just use field controller
+                  // Effectively we want to pre-fill it.
+                  if (fieldTextEditingController.text.isEmpty &&
+                      _renameController.text.isNotEmpty) {
+                    fieldTextEditingController.text = _renameController.text;
+                  }
 
-              // We need to keep our _renameController in sync for the
-              // "Rename" button
-              fieldTextEditingController.addListener(() {
-                _renameController.text = fieldTextEditingController.text;
-              });
+                  // We need to keep our _renameController in sync for the
+                  // "Rename" button
+                  fieldTextEditingController.addListener(() {
+                    _renameController.text = fieldTextEditingController.text;
+                  });
 
-              return TextField(
-                controller: fieldTextEditingController,
-                focusNode: fieldFocusNode,
-                autofocus: true,
-                decoration: const InputDecoration(
-                  labelText: 'New Name',
-                ),
-              );
-            },
+                  return TextField(
+                    controller: fieldTextEditingController,
+                    focusNode: fieldFocusNode,
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      labelText: 'New Name',
+                    ),
+                  );
+                },
+              ),
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: _renameController,
+                builder: (context, value, child) {
+                  final text = value.text;
+                  final regex =
+                      RegExp(r'^\(([^)]+)\)\[([^\]]+)\](.*?)(?:\s+(v\d+))?$');
+                  final match = regex.firstMatch(text);
+
+                  if (match == null) {
+                    return const SizedBox.shrink();
+                  }
+
+                  final category = match.group(1)?.trim() ?? '';
+                  final author = match.group(2)?.trim() ?? '';
+                  final title = match.group(3)?.trim() ?? '';
+                  final volume = match.group(4)?.trim() ?? '';
+
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildInfoRow('Category', category),
+                        _buildInfoRow('Author', author),
+                        _buildInfoRow('Title', title),
+                        if (volume.isNotEmpty) _buildInfoRow('Volume', volume),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
           actions: [
             TextButton(
@@ -98,10 +134,12 @@ class _FolderListState extends ConsumerState<FolderList> {
                     if (newName == targetName) continue;
 
                     // Check for any 2-3 digit numbers
-                    final matches = RegExp(r'(\d{2,3})').allMatches(targetName);
+                    final matches = RegExp(r'(\d{1,3})').allMatches(targetName);
                     if (matches.isNotEmpty) {
                       final suffix = matches.last.group(0)!;
-                      if (!newName.endsWith(suffix)) {
+                      if (suffix.length == 1) {
+                        newName = '$newName v0$suffix';
+                      } else {
                         newName = '$newName v$suffix';
                       }
                     }
@@ -125,6 +163,36 @@ class _FolderListState extends ConsumerState<FolderList> {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    if (value.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: InkWell(
+        onTap: () async {
+          await Clipboard.setData(ClipboardData(text: value));
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Copied "$value" to clipboard'),
+                duration: const Duration(seconds: 1),
+              ),
+            );
+          }
+        },
+        child: Row(
+          children: [
+            Text(
+              '$label: ',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Expanded(child: Text(value)),
+            const Icon(Icons.copy, size: 16, color: Colors.grey),
+          ],
+        ),
+      ),
     );
   }
 

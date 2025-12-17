@@ -91,30 +91,111 @@ class SettingsPage extends ConsumerWidget {
           await showDialog<void>(
             context: context,
             builder: (context) {
-              final controller = TextEditingController();
-              return AlertDialog(
-                title: const Text('Add Name'),
-                content: TextField(
-                  controller: controller,
-                  autofocus: true,
-                  decoration: const InputDecoration(labelText: 'Name'),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      final text = controller.text.trim();
-                      if (text.isNotEmpty) {
-                        ref.read(nameSuggestionProvider.notifier).add(text);
-                      }
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Add'),
-                  ),
-                ],
+              final categoryController = TextEditingController();
+              final authorController = TextEditingController();
+              final titleController = TextEditingController();
+              final volumeController = TextEditingController();
+
+              return StatefulBuilder(
+                builder: (context, setState) {
+                  String getFormattedName() {
+                    final category = categoryController.text.trim();
+                    final author = authorController.text.trim();
+                    final title = titleController.text.trim();
+                    final volume = volumeController.text.trim();
+
+                    if (category.isEmpty &&
+                        author.isEmpty &&
+                        title.isEmpty &&
+                        volume.isEmpty) {
+                      return '';
+                    }
+
+                    final buffer = StringBuffer();
+                    if (category.isNotEmpty) buffer.write('($category)');
+                    if (author.isNotEmpty) buffer.write('[$author]');
+                    buffer.write(title);
+                    if (volume.isNotEmpty) buffer.write(' $volume');
+
+                    return buffer.toString();
+                  }
+
+                  return AlertDialog(
+                    title: const Text('Add Name'),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextField(
+                            controller: categoryController,
+                            autofocus: true,
+                            decoration:
+                                const InputDecoration(labelText: 'Category'),
+                            onChanged: (_) => setState(() {}),
+                          ),
+                          TextField(
+                            controller: authorController,
+                            decoration:
+                                const InputDecoration(labelText: 'Author'),
+                            onChanged: (_) => setState(() {}),
+                          ),
+                          TextField(
+                            controller: titleController,
+                            decoration:
+                                const InputDecoration(labelText: 'Title'),
+                            onChanged: (_) => setState(() {}),
+                          ),
+                          TextField(
+                            controller: volumeController,
+                            decoration:
+                                const InputDecoration(labelText: 'Volume'),
+                            onChanged: (_) => setState(() {}),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Preview:',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: SelectableText(
+                              getFormattedName().isEmpty
+                                  ? '(Category)[Author]Title v00'
+                                  : getFormattedName(),
+                              style: TextStyle(
+                                color: getFormattedName().isEmpty
+                                    ? Colors.grey
+                                    : Colors.black,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          final text = getFormattedName();
+                          if (text.isNotEmpty) {
+                            ref.read(nameSuggestionProvider.notifier).add(text);
+                          }
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Add'),
+                      ),
+                    ],
+                  );
+                },
               );
             },
           );
