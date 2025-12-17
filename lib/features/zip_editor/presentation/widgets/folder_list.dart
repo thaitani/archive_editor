@@ -90,12 +90,7 @@ class _FolderListState extends ConsumerState<FolderList> {
               onPressed: () {
                 final baseNewName = _renameController.text;
                 if (baseNewName.isNotEmpty) {
-                  final targets = <String>{};
-                  if (widget.checkedDirectories.contains(directory.name)) {
-                    targets.addAll(widget.checkedDirectories);
-                  } else {
-                    targets.add(directory.name);
-                  }
+                  final targets = widget.directories.map((d) => d.name).toSet();
 
                   for (final targetName in targets) {
                     var newName = baseNewName;
