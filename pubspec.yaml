@@ -63,6 +63,7 @@ dependencies:
 
   path: any
   desktop_drop: ^0.7.0
+  uuid: ^4.5.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

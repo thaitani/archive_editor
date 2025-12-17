@@ -98,9 +98,14 @@ void main() {
       await container.read(zipEditorProvider.notifier).loadZips([platformFile]);
 
       // 2. Rename
+      final folder1Id = container
+          .read(zipEditorProvider)
+          .firstWhere((d) => d.name == 'folder1')
+          .id;
+
       container
           .read(zipEditorProvider.notifier)
-          .renameDirectory('folder1', 'vacation');
+          .renameDirectory(folder1Id, 'vacation');
 
       // 3. Verify
       final state = container.read(zipEditorProvider);
@@ -176,9 +181,13 @@ void main() {
       await container.read(zipEditorProvider.notifier).loadZips([platformFile]);
 
       // 2. Toggle exclusion for image2
+      final folder1Id = container
+          .read(zipEditorProvider)
+          .firstWhere((d) => d.name == 'folder1')
+          .id;
       container
           .read(zipEditorProvider.notifier)
-          .toggleImageInclusion('folder1', 'image2.png');
+          .toggleImageInclusion(folder1Id, 'image2.png');
 
       // Verify state update
       final state = container.read(zipEditorProvider);
@@ -267,7 +276,7 @@ void main() {
       subscription.close();
       tempDir.deleteSync(recursive: true);
     });
-    test('saveZips respects filterNames', () async {
+    test('saveZips respects filterIds', () async {
       // 1. Create temp zip with 2 folders
       final archive = Archive()
         ..addFile(
@@ -292,9 +301,14 @@ void main() {
 
       await container.read(zipEditorProvider.notifier).loadZips([platformFile]);
 
+      final folderAId = container
+          .read(zipEditorProvider)
+          .firstWhere((d) => d.name == 'folderA')
+          .id;
+
       // 2. Save with filter -> only folderA
       final result = container.read(zipEditorProvider.notifier).saveZips(
-        filterNames: {'folderA'},
+        filterIds: {folderAId},
       );
 
       // 3. Verify

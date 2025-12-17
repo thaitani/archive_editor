@@ -90,29 +90,35 @@ class _FolderListState extends ConsumerState<FolderList> {
               onPressed: () {
                 final baseNewName = _renameController.text;
                 if (baseNewName.isNotEmpty) {
-                  final targets = widget.directories.map((d) => d.name).toSet();
+                  final uniqueNames =
+                      widget.directories.map((d) => d.name).toSet();
 
-                  for (final targetName in targets) {
+                  for (final targetName in uniqueNames) {
                     var newName = baseNewName;
                     if (newName == targetName) continue;
 
-                    // Check for any 2-3 digit numbers, taking the last one
-                    // found
+                    // Check for any 2-3 digit numbers
                     final matches = RegExp(r'(\d{2,3})').allMatches(targetName);
                     if (matches.isNotEmpty) {
                       final suffix = matches.last.group(0)!;
-                      // Check if new name already has this suffix at the end
                       if (!newName.endsWith(suffix)) {
                         newName = '$newName v$suffix';
                       }
                     }
 
-                    ref
-                        .read(zipEditorProvider.notifier)
-                        .renameDirectory(targetName, newName);
+                    // Apply to all directories matching this name
+                    final matchingDirs =
+                        widget.directories.where((d) => d.name == targetName);
+                    for (final dir in matchingDirs) {
+                      ref
+                          .read(zipEditorProvider.notifier)
+                          .renameDirectory(dir.id, newName);
+                    }
                   }
                 }
-                Navigator.of(context).pop();
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
               },
               child: const Text('Rename'),
             ),
@@ -138,9 +144,9 @@ class _FolderListState extends ConsumerState<FolderList> {
         return ListTile(
           selected: isSelected,
           leading: Checkbox(
-            value: widget.checkedDirectories.contains(directory.name),
+            value: widget.checkedDirectories.contains(directory.id),
             onChanged: (value) => widget.onDirectoryChecked(
-              directory.name,
+              directory.id,
               isChecked: value ?? false,
             ),
           ),

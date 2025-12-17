@@ -6,6 +6,7 @@ import 'package:archive_editor/features/zip_editor/domain/zip_models.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
 
 part 'zip_editor_provider.g.dart';
 
@@ -56,21 +57,25 @@ class ZipEditor extends _$ZipEditor {
     }
 
     state = groupedFiles.entries.map((entry) {
-      return ZipDirectory(name: entry.key, images: entry.value);
+      return ZipDirectory(
+        id: const Uuid().v4(),
+        name: entry.key,
+        images: entry.value,
+      );
     }).toList();
   }
 
-  void renameDirectory(String oldName, String newName) {
+  void renameDirectory(String id, String newName) {
     state = [
       for (final ZipDirectory dir in state.cast<ZipDirectory>())
-        if (dir.name == oldName) dir.copyWith(name: newName) else dir,
+        if (dir.id == id) dir.copyWith(name: newName) else dir,
     ];
   }
 
-  void toggleImageInclusion(String directoryName, String imageName) {
+  void toggleImageInclusion(String directoryId, String imageName) {
     state = [
       for (final ZipDirectory dir in state.cast<ZipDirectory>())
-        if (dir.name == directoryName)
+        if (dir.id == directoryId)
           dir.copyWith(
             images: [
               for (final img in dir.images)
@@ -85,11 +90,11 @@ class ZipEditor extends _$ZipEditor {
     ];
   }
 
-  Map<String, Uint8List> saveZips({Set<String>? filterNames}) {
+  Map<String, Uint8List> saveZips({Set<String>? filterIds}) {
     final result = <String, Uint8List>{};
 
     for (final dir in state.cast<ZipDirectory>()) {
-      if (filterNames != null && !filterNames.contains(dir.name)) {
+      if (filterIds != null && !filterIds.contains(dir.id)) {
         continue;
       }
       final archive = Archive();

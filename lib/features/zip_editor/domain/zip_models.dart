@@ -25,17 +25,22 @@ class ZipImage {
 
 class ZipDirectory {
   const ZipDirectory({
+    required this.id,
     required this.name,
     required this.images,
   });
+
+  final String id;
   final String name;
   final List<ZipImage> images;
 
   ZipDirectory copyWith({
+    String? id,
     String? name,
     List<ZipImage>? images,
   }) {
     return ZipDirectory(
+      id: id ?? this.id,
       name: name ?? this.name,
       images: images ?? this.images,
     );

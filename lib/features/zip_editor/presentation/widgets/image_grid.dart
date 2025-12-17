@@ -79,7 +79,7 @@ class ImageGrid extends ConsumerWidget {
                     value: image.isIncluded,
                     onChanged: (value) {
                       ref.read(zipEditorProvider.notifier).toggleImageInclusion(
-                            directory.name,
+                            directory.id,
                             image.name,
                           );
                     },

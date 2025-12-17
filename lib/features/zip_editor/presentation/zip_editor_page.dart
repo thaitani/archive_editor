@@ -30,7 +30,7 @@ class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           _selectedDirectory = directories.first;
-          _checkedFolders.addAll(directories.map((d) => d.name));
+          _checkedFolders.addAll(directories.map((d) => d.id));
           _isInitialized = true;
         });
       });
@@ -46,7 +46,7 @@ class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
     } else if (_selectedDirectory != null) {
       // Update reference to the new object with same name
       final current = directories.firstWhere(
-        (d) => d.name == _selectedDirectory!.name,
+        (d) => d.id == _selectedDirectory!.id,
         orElse: () => _selectedDirectory!,
       );
       if (current != _selectedDirectory) {
@@ -65,7 +65,7 @@ class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
             onPressed: () async {
               final zips = ref
                   .read(zipEditorProvider.notifier)
-                  .saveZips(filterNames: _checkedFolders);
+                  .saveZips(filterIds: _checkedFolders);
               if (zips.isEmpty) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -122,8 +122,7 @@ class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
                     onChanged: (value) {
                       setState(() {
                         if (value ?? false) {
-                          _checkedFolders
-                              .addAll(directories.map((d) => d.name));
+                          _checkedFolders.addAll(directories.map((d) => d.id));
                         } else {
                           _checkedFolders.clear();
                         }
@@ -140,12 +139,12 @@ class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
                       });
                     },
                     checkedDirectories: _checkedFolders,
-                    onDirectoryChecked: (name, {required isChecked}) {
+                    onDirectoryChecked: (id, {required isChecked}) {
                       setState(() {
                         if (isChecked) {
-                          _checkedFolders.add(name);
+                          _checkedFolders.add(id);
                         } else {
-                          _checkedFolders.remove(name);
+                          _checkedFolders.remove(id);
                         }
                       });
                     },
