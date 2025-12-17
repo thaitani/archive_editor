@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:archive_editor/features/settings/application/app_settings_provider.dart';
 import 'package:archive_editor/features/zip_editor/application/zip_editor_provider.dart';
 import 'package:archive_editor/features/zip_editor/domain/zip_models.dart';
 import 'package:archive_editor/features/zip_editor/presentation/widgets/config_load_button.dart';
@@ -79,8 +80,11 @@ class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
             return;
           }
 
+          final defaultPath =
+              ref.read(appSettingsProvider).defaultSaveDirectory;
           final directoryPath = await FilePicker.platform.getDirectoryPath(
             dialogTitle: 'Select Directory to Save Zips',
+            initialDirectory: defaultPath,
           );
 
           if (directoryPath != null) {

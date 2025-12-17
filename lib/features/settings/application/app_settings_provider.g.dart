@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'zip_editor_provider.dart';
+part of 'app_settings_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,50 +9,50 @@ part of 'zip_editor_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(ZipEditor)
-const zipEditorProvider = ZipEditorProvider._();
+@ProviderFor(AppSettings)
+const appSettingsProvider = AppSettingsProvider._();
 
-final class ZipEditorProvider
-    extends $NotifierProvider<ZipEditor, List<ZipDirectory>> {
-  const ZipEditorProvider._()
+final class AppSettingsProvider
+    extends $NotifierProvider<AppSettings, AppSettingsState> {
+  const AppSettingsProvider._()
       : super(
           from: null,
           argument: null,
           retry: null,
-          name: r'zipEditorProvider',
+          name: r'appSettingsProvider',
           isAutoDispose: true,
           dependencies: null,
           $allTransitiveDependencies: null,
         );
 
   @override
-  String debugGetCreateSourceHash() => _$zipEditorHash();
+  String debugGetCreateSourceHash() => _$appSettingsHash();
 
   @$internal
   @override
-  ZipEditor create() => ZipEditor();
+  AppSettings create() => AppSettings();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(List<ZipDirectory> value) {
+  Override overrideWithValue(AppSettingsState value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<List<ZipDirectory>>(value),
+      providerOverride: $SyncValueProvider<AppSettingsState>(value),
     );
   }
 }
 
-String _$zipEditorHash() => r'20545c34edda40f11d7510a43b80fad52c708fbc';
+String _$appSettingsHash() => r'4c93ec5ac3f0c0733daaedb86fb7effe2b10a4a8';
 
-abstract class _$ZipEditor extends $Notifier<List<ZipDirectory>> {
-  List<ZipDirectory> build();
+abstract class _$AppSettings extends $Notifier<AppSettingsState> {
+  AppSettingsState build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<List<ZipDirectory>, List<ZipDirectory>>;
+    final ref = this.ref as $Ref<AppSettingsState, AppSettingsState>;
     final element = ref.element as $ClassProviderElement<
-        AnyNotifier<List<ZipDirectory>, List<ZipDirectory>>,
-        List<ZipDirectory>,
+        AnyNotifier<AppSettingsState, AppSettingsState>,
+        AppSettingsState,
         Object?,
         Object?>;
     element.handleValue(ref, created);

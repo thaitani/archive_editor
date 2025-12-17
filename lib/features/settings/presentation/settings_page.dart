@@ -1,3 +1,4 @@
+import 'package:archive_editor/features/settings/application/app_settings_provider.dart';
 import 'package:archive_editor/features/zip_editor/application/name_suggestion_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -59,32 +60,58 @@ class SettingsPage extends ConsumerWidget {
           ),
         ],
       ),
-      body: suggestions.isEmpty
-          ? const Center(
-              child: Text(
-                'No configuration loaded.\n'
-                'Tap the upload icon to load a text file.',
-                textAlign: TextAlign.center,
-              ),
-            )
-          : ListView.builder(
-              itemCount: suggestions.length,
-              itemBuilder: (context, index) {
-                final suggestion = suggestions[index];
-                return ListTile(
-                  title: Text(suggestion),
-                  leading: const Icon(Icons.label_outline),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () {
-                      ref
-                          .read(nameSuggestionProvider.notifier)
-                          .remove(suggestion);
-                    },
-                  ),
+      body: Column(
+        children: [
+          ListTile(
+            title: const Text('Default Save Directory'),
+            subtitle: Text(
+              ref.watch(appSettingsProvider).defaultSaveDirectory ?? 'Not set',
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.folder_open),
+              onPressed: () async {
+                final path = await FilePicker.platform.getDirectoryPath(
+                  dialogTitle: 'Select Default Save Directory',
                 );
+                if (path != null) {
+                  await ref
+                      .read(appSettingsProvider.notifier)
+                      .setDefaultSaveDirectory(path);
+                }
               },
             ),
+          ),
+          const Divider(),
+          Expanded(
+            child: suggestions.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No configuration loaded.\n'
+                      'Tap the upload icon to load a text file.',
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: suggestions.length,
+                    itemBuilder: (context, index) {
+                      final suggestion = suggestions[index];
+                      return ListTile(
+                        title: Text(suggestion),
+                        leading: const Icon(Icons.label_outline),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () {
+                            ref
+                                .read(nameSuggestionProvider.notifier)
+                                .remove(suggestion);
+                          },
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () async {
