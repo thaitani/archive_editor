@@ -5,6 +5,7 @@ import 'package:archive_editor/features/zip_editor/domain/zip_models.dart';
 import 'package:archive_editor/features/zip_editor/presentation/widgets/config_load_button.dart';
 import 'package:archive_editor/features/zip_editor/presentation/widgets/folder_list.dart';
 import 'package:archive_editor/features/zip_editor/presentation/widgets/image_grid.dart';
+import 'package:archive_editor/routes/router.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -95,6 +96,7 @@ class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
                     content: Text('Saved ${zips.length} zips successfully!'),
                   ),
                 );
+                const HomeRoute().go(context);
               }
             } on Object catch (e) {
               if (context.mounted) {
