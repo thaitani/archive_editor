@@ -133,10 +133,20 @@ class _FolderListState extends ConsumerState<FolderList> {
                     var newName = baseNewName;
                     if (newName == targetName) continue;
 
-                    // Check for any 2-3 digit numbers
-                    final matches = RegExp(r'(\d{1,3})').allMatches(targetName);
+                    // Check for any 1-3 digit numbers (half or full width)
+                    final matches =
+                        RegExp('([0-9０-９]{1,3})').allMatches(targetName);
                     if (matches.isNotEmpty) {
-                      final suffix = matches.last.group(0)!;
+                      var suffix = matches.last.group(0)!;
+
+                      // Convert full-width to half-width
+                      suffix =
+                          suffix.replaceAllMapped(RegExp('[０-９]'), (match) {
+                        return String.fromCharCode(
+                          match.group(0)!.codeUnitAt(0) - 0xFEE0,
+                        );
+                      });
+
                       if (suffix.length == 1) {
                         newName = '$newName v0$suffix';
                       } else {
