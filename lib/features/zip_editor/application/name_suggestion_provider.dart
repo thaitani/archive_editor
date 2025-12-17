@@ -43,6 +43,22 @@ class NameSuggestion extends _$NameSuggestion {
     await _saveToPrefs(newState);
   }
 
+  Future<void> edit(String oldName, String newName) async {
+    if (state.contains(newName)) {
+      // If new name already exists, just remove the old one (merge)
+      // or we could throw an error. For now, let's just remove old and ensure new is there.
+      // But simpler is: replace old with new, then de-dupe.
+    }
+
+    final newState = state.map((e) => e == oldName ? newName : e).toList();
+
+    // Remove duplicates if any (e.g. if we renamed to an existing name)
+    final uniqueState = newState.toSet().toList();
+
+    state = uniqueState;
+    await _saveToPrefs(uniqueState);
+  }
+
   Future<void> saveConfig(String path) async {
     final file = File(path);
     await file.writeAsString(state.join('\n'));
