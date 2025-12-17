@@ -100,8 +100,8 @@ class SettingsPage extends ConsumerWidget {
                         leading: const Icon(Icons.label_outline),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            ref
+                          onPressed: () async {
+                            await ref
                                 .read(nameSuggestionProvider.notifier)
                                 .remove(suggestion);
                           },
@@ -121,7 +121,6 @@ class SettingsPage extends ConsumerWidget {
               final categoryController = TextEditingController();
               final authorController = TextEditingController();
               final titleController = TextEditingController();
-              final volumeController = TextEditingController();
 
               return StatefulBuilder(
                 builder: (context, setState) {
@@ -129,12 +128,8 @@ class SettingsPage extends ConsumerWidget {
                     final category = categoryController.text.trim();
                     final author = authorController.text.trim();
                     final title = titleController.text.trim();
-                    final volume = volumeController.text.trim();
 
-                    if (category.isEmpty &&
-                        author.isEmpty &&
-                        title.isEmpty &&
-                        volume.isEmpty) {
+                    if (category.isEmpty && author.isEmpty && title.isEmpty) {
                       return '';
                     }
 
@@ -142,7 +137,6 @@ class SettingsPage extends ConsumerWidget {
                     if (category.isNotEmpty) buffer.write('($category)');
                     if (author.isNotEmpty) buffer.write('[$author]');
                     buffer.write(title);
-                    if (volume.isNotEmpty) buffer.write(' $volume');
 
                     return buffer.toString();
                   }
@@ -171,12 +165,6 @@ class SettingsPage extends ConsumerWidget {
                             controller: titleController,
                             decoration:
                                 const InputDecoration(labelText: 'Title'),
-                            onChanged: (_) => setState(() {}),
-                          ),
-                          TextField(
-                            controller: volumeController,
-                            decoration:
-                                const InputDecoration(labelText: 'Volume'),
                             onChanged: (_) => setState(() {}),
                           ),
                           const SizedBox(height: 16),
@@ -211,12 +199,16 @@ class SettingsPage extends ConsumerWidget {
                         child: const Text('Cancel'),
                       ),
                       TextButton(
-                        onPressed: () {
+                        onPressed: () async {
                           final text = getFormattedName();
                           if (text.isNotEmpty) {
-                            ref.read(nameSuggestionProvider.notifier).add(text);
+                            await ref
+                                .read(nameSuggestionProvider.notifier)
+                                .add(text);
                           }
-                          Navigator.of(context).pop();
+                          if (context.mounted) {
+                            Navigator.of(context).pop();
+                          }
                         },
                         child: const Text('Add'),
                       ),
