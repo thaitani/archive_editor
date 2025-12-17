@@ -63,8 +63,19 @@ class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
             icon: const Icon(Icons.save),
             tooltip: 'Save Zips',
             onPressed: () async {
-              final zips = ref.read(zipEditorProvider.notifier).saveZips();
-              if (zips.isEmpty) return;
+              final zips = ref
+                  .read(zipEditorProvider.notifier)
+                  .saveZips(filterNames: _checkedFolders);
+              if (zips.isEmpty) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('No folders selected to save.'),
+                    ),
+                  );
+                }
+                return;
+              }
 
               final directoryPath = await FilePicker.platform.getDirectoryPath(
                 dialogTitle: 'Select Directory to Save Zips',

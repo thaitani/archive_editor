@@ -267,5 +267,43 @@ void main() {
       subscription.close();
       tempDir.deleteSync(recursive: true);
     });
+    test('saveZips respects filterNames', () async {
+      // 1. Create temp zip with 2 folders
+      final archive = Archive()
+        ..addFile(
+          ArchiveFile('folderA/im.png', 5, Uint8List.fromList([1])),
+        )
+        ..addFile(
+          ArchiveFile('folderB/im.png', 5, Uint8List.fromList([2])),
+        );
+
+      final zipBytes = ZipEncoder().encode(archive);
+      final tempDir = Directory.systemTemp.createTempSync();
+      final zipFile = File('${tempDir.path}/test_filter.zip');
+      await zipFile.writeAsBytes(zipBytes);
+      final platformFile = PlatformFile(
+        name: 'test_filter.zip',
+        size: 0,
+        path: zipFile.path,
+      );
+
+      // Keep provider alive
+      final subscription = container.listen(zipEditorProvider, (_, __) {});
+
+      await container.read(zipEditorProvider.notifier).loadZips([platformFile]);
+
+      // 2. Save with filter -> only folderA
+      final result = container.read(zipEditorProvider.notifier).saveZips(
+        filterNames: {'folderA'},
+      );
+
+      // 3. Verify
+      expect(result.length, 1);
+      expect(result.containsKey('folderA.zip'), true);
+      expect(result.containsKey('folderB.zip'), false);
+
+      subscription.close();
+      tempDir.deleteSync(recursive: true);
+    });
   });
 }

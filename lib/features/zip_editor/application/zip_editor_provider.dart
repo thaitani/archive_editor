@@ -85,10 +85,13 @@ class ZipEditor extends _$ZipEditor {
     ];
   }
 
-  Map<String, Uint8List> saveZips() {
+  Map<String, Uint8List> saveZips({Set<String>? filterNames}) {
     final result = <String, Uint8List>{};
 
     for (final dir in state.cast<ZipDirectory>()) {
+      if (filterNames != null && !filterNames.contains(dir.name)) {
+        continue;
+      }
       final archive = Archive();
       for (final img in dir.images) {
         if (!img.isIncluded) continue;
