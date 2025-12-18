@@ -12,6 +12,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ZipEditorPage extends ConsumerStatefulWidget {
   const ZipEditorPage({super.key});
@@ -294,6 +296,38 @@ class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
                   content: Text('No folders selected to save.'),
                 ),
               );
+            }
+            return;
+          }
+
+          if (Platform.isIOS) {
+            try {
+              final tempDir = await getTemporaryDirectory();
+              final files = <XFile>[];
+
+              for (final entry in zips.entries) {
+                final file = File('${tempDir.path}/${entry.key}');
+                await file.create(recursive: true);
+                await file.writeAsBytes(entry.value);
+                files.add(XFile(file.path));
+              }
+
+              if (context.mounted) {
+                await SharePlus.instance.share(ShareParams(files: files));
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Shared zips successfully!'),
+                    ),
+                  );
+                }
+              }
+            } on Object catch (e) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Failed to share zips: $e')),
+                );
+              }
             }
             return;
           }
