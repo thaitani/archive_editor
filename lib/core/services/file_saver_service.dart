@@ -49,8 +49,8 @@ class FileSaverService {
 
       for (final entry in zips.entries) {
         final file = File('${tempDir.path}/${entry.key}');
-        // Ensure directory exists if needed, though usually tempDir is flat or we just write file
-        // For zip names like "foo.zip", it's just a file.
+        // Ensure directory exists if needed, though usually tempDir is flat
+        // or we just write file. For zip names like "foo.zip", it's just a file.
         await file.writeAsBytes(entry.value);
         files.add(XFile(file.path));
       }

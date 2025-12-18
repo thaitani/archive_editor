@@ -46,7 +46,8 @@ class NameSuggestion extends _$NameSuggestion {
   Future<void> edit(String oldName, String newName) async {
     if (state.contains(newName)) {
       // If new name already exists, just remove the old one (merge)
-      // or we could throw an error. For now, let's just remove old and ensure new is there.
+      // or we could throw an error.
+      // For now, let's just remove old and ensure new is there.
       // But simpler is: replace old with new, then de-dupe.
     }
 
