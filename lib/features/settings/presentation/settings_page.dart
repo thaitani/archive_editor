@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:archive_editor/core/services/file_saver_service.dart';
 import 'package:archive_editor/features/settings/application/app_settings_provider.dart';
 import 'package:archive_editor/features/zip_editor/application/name_suggestion_provider.dart';
 import 'package:file_picker/file_picker.dart';
@@ -38,23 +42,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             icon: const Icon(Icons.download),
             tooltip: 'Export Config File',
             onPressed: () async {
-              final result = await FilePicker.platform.saveFile(
-                dialogTitle: 'Save Name Config',
-                fileName: 'name_config.txt',
-                allowedExtensions: ['txt'],
-                type: FileType.custom,
-              );
+              final content = ref.read(nameSuggestionProvider).join('\n');
+              final bytes = Uint8List.fromList(utf8.encode(content));
 
-              if (result != null) {
-                await ref
-                    .read(nameSuggestionProvider.notifier)
-                    .saveConfig(result);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Name config saved')),
+              await ref.read(fileSaverServiceProvider).saveFile(
+                    context,
+                    bytes,
+                    'name_config.txt',
                   );
-                }
-              }
             },
           ),
           IconButton(

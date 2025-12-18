@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:archive_editor/core/services/file_saver_service.dart';
 import 'package:archive_editor/features/settings/application/app_settings_provider.dart';
 import 'package:archive_editor/features/zip_editor/application/name_suggestion_provider.dart';
 import 'package:archive_editor/features/zip_editor/application/zip_editor_provider.dart';
@@ -7,13 +6,9 @@ import 'package:archive_editor/features/zip_editor/domain/zip_models.dart';
 import 'package:archive_editor/features/zip_editor/presentation/widgets/config_load_button.dart';
 import 'package:archive_editor/features/zip_editor/presentation/widgets/folder_list.dart';
 import 'package:archive_editor/features/zip_editor/presentation/widgets/image_grid.dart';
-import 'package:archive_editor/routes/router.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 class ZipEditorPage extends ConsumerStatefulWidget {
   const ZipEditorPage({super.key});
@@ -289,79 +284,15 @@ class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
           final zips = ref
               .read(zipEditorProvider.notifier)
               .saveZips(filterIds: _checkedFolders);
-          if (zips.isEmpty) {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('No folders selected to save.'),
-                ),
-              );
-            }
-            return;
-          }
-
-          if (Platform.isIOS) {
-            try {
-              final tempDir = await getTemporaryDirectory();
-              final files = <XFile>[];
-
-              for (final entry in zips.entries) {
-                final file = File('${tempDir.path}/${entry.key}');
-                await file.create(recursive: true);
-                await file.writeAsBytes(entry.value);
-                files.add(XFile(file.path));
-              }
-
-              if (context.mounted) {
-                await SharePlus.instance.share(ShareParams(files: files));
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Shared zips successfully!'),
-                    ),
-                  );
-                }
-              }
-            } on Object catch (e) {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Failed to share zips: $e')),
-                );
-              }
-            }
-            return;
-          }
 
           final defaultPath =
               ref.read(appSettingsProvider).defaultSaveDirectory;
-          final directoryPath = await FilePicker.platform.getDirectoryPath(
-            dialogTitle: 'Select Directory to Save Zips',
-            initialDirectory: defaultPath,
-          );
 
-          if (directoryPath != null) {
-            try {
-              for (final entry in zips.entries) {
-                final file = File('$directoryPath/${entry.key}');
-                await file.writeAsBytes(entry.value);
-              }
-
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Saved ${zips.length} zips successfully!'),
-                  ),
-                );
-                const HomeRoute().go(context);
-              }
-            } on Object catch (e) {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Failed to save zips: $e')),
-                );
-              }
-            }
-          }
+          await ref.read(fileSaverServiceProvider).saveZips(
+                context,
+                zips,
+                defaultPath: defaultPath,
+              );
         },
         child: const Icon(Icons.save),
       ),

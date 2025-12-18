@@ -7,5 +7,5 @@ trigger: always_on
 - dartコマンドの代わりに`fvm dart`で実行してください
 
 # lint
-- 編集が完了したら`fvm flutter analyze`でエラーを確認してください
+- 編集が完了したら`fvm flutter analyze`でエラーを確認して修正
 - lintの解消にignoreを利用する場合は確認してください
