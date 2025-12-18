@@ -1,13 +1,13 @@
 import 'package:archive_editor/core/services/file_saver_service.dart';
 import 'package:archive_editor/features/settings/application/app_settings_provider.dart';
-import 'package:archive_editor/features/zip_editor/application/name_suggestion_provider.dart';
 import 'package:archive_editor/features/zip_editor/application/zip_editor_provider.dart';
 import 'package:archive_editor/features/zip_editor/domain/zip_models.dart';
+import 'package:archive_editor/features/zip_editor/presentation/dialogs/bulk_rename_dialog.dart';
+import 'package:archive_editor/features/zip_editor/presentation/dialogs/rename_folder_dialog.dart';
 import 'package:archive_editor/features/zip_editor/presentation/widgets/config_load_button.dart';
 import 'package:archive_editor/features/zip_editor/presentation/widgets/folder_list.dart';
 import 'package:archive_editor/features/zip_editor/presentation/widgets/image_grid.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ZipEditorPage extends ConsumerStatefulWidget {
@@ -26,215 +26,20 @@ class _ZipEditorPageState extends ConsumerState<ZipEditorPage> {
     BuildContext context,
     ZipDirectory directory,
   ) async {
-    final controller = TextEditingController(text: directory.name);
     await showDialog<void>(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Rename Folder'),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: const InputDecoration(labelText: 'New Name'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                final newName = controller.text;
-                if (newName.isNotEmpty && newName != directory.name) {
-                  ref
-                      .read(zipEditorProvider.notifier)
-                      .renameDirectory(directory.id, newName);
-                }
-                Navigator.of(context).pop();
-              },
-              child: const Text('Rename'),
-            ),
-          ],
-        );
+        return RenameFolderDialog(directory: directory);
       },
     );
-    controller.dispose();
   }
-
-// ... (other imports)
 
   Future<void> _showBulkRenameDialog(BuildContext context) async {
-    final controller = TextEditingController();
     await showDialog<void>(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Bulk Rename'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'This will rename ALL folders. Suffixes/Numbers will be preserved.',
-              ),
-              const SizedBox(height: 16),
-              Autocomplete<String>(
-                optionsBuilder: (TextEditingValue textEditingValue) {
-                  final suggestions = ref.read(nameSuggestionProvider);
-                  if (textEditingValue.text == '') {
-                    return const Iterable<String>.empty();
-                  }
-                  return suggestions.where((String option) {
-                    return option
-                        .toLowerCase()
-                        .contains(textEditingValue.text.toLowerCase());
-                  });
-                },
-                onSelected: (String selection) {
-                  controller.text = selection;
-                },
-                fieldViewBuilder: (
-                  BuildContext context,
-                  TextEditingController fieldTextEditingController,
-                  FocusNode fieldFocusNode,
-                  VoidCallback onFieldSubmitted,
-                ) {
-                  if (fieldTextEditingController.text.isEmpty &&
-                      controller.text.isNotEmpty) {
-                    fieldTextEditingController.text = controller.text;
-                  }
-                  fieldTextEditingController.addListener(() {
-                    controller.text = fieldTextEditingController.text;
-                  });
-
-                  return TextField(
-                    controller: fieldTextEditingController,
-                    focusNode: fieldFocusNode,
-                    autofocus: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Base Name',
-                    ),
-                  );
-                },
-              ),
-              ValueListenableBuilder<TextEditingValue>(
-                valueListenable: controller,
-                builder: (context, value, child) {
-                  final text = value.text;
-                  final regex =
-                      RegExp(r'^\(([^)]+)\)\[([^\]]+)\](.*?)(?:\s+(v\d+))?$');
-                  final match = regex.firstMatch(text);
-
-                  if (match == null) {
-                    return const SizedBox.shrink();
-                  }
-
-                  final category = match.group(1)?.trim() ?? '';
-                  final author = match.group(2)?.trim() ?? '';
-                  final title = match.group(3)?.trim() ?? '';
-                  final volume = match.group(4)?.trim() ?? '';
-
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildInfoRow('Category', category),
-                        _buildInfoRow('Author', author),
-                        _buildInfoRow('Title', title),
-                        if (volume.isNotEmpty) _buildInfoRow('Volume', volume),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                final baseNewName = controller.text;
-                if (baseNewName.isNotEmpty) {
-                  final directories =
-                      ref.read(zipEditorProvider).cast<ZipDirectory>();
-                  final uniqueNames = directories.map((d) => d.name).toSet();
-
-                  for (final targetName in uniqueNames) {
-                    var newName = baseNewName;
-                    if (newName == targetName) continue;
-
-                    // Check for any 1-3 digit numbers (half or full width)
-                    final matches =
-                        RegExp('([0-9０-９]{1,3})').allMatches(targetName);
-                    if (matches.isNotEmpty) {
-                      var suffix = matches.last.group(0)!;
-
-                      // Convert full-width to half-width
-                      suffix =
-                          suffix.replaceAllMapped(RegExp('[０-９]'), (match) {
-                        return String.fromCharCode(
-                          match.group(0)!.codeUnitAt(0) - 0xFEE0,
-                        );
-                      });
-
-                      if (suffix.length == 1) {
-                        newName = '$newName v0$suffix';
-                      } else {
-                        newName = '$newName v$suffix';
-                      }
-                    }
-
-                    // Apply to all directories matching this name
-                    final matchingDirs =
-                        directories.where((d) => d.name == targetName);
-                    for (final dir in matchingDirs) {
-                      ref
-                          .read(zipEditorProvider.notifier)
-                          .renameDirectory(dir.id, newName);
-                    }
-                  }
-                }
-                Navigator.of(context).pop();
-              },
-              child: const Text('Rename All'),
-            ),
-          ],
-        );
+        return const BulkRenameDialog();
       },
-    );
-    controller.dispose();
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    if (value.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: InkWell(
-        onTap: () async {
-          await Clipboard.setData(ClipboardData(text: value));
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Copied "$value" to clipboard'),
-                duration: const Duration(seconds: 1),
-              ),
-            );
-          }
-        },
-        child: Row(
-          children: [
-            Text(
-              '$label: ',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Expanded(child: Text(value)),
-            const Icon(Icons.copy, size: 16, color: Colors.grey),
-          ],
-        ),
-      ),
     );
   }
 
